@@ -34,6 +34,20 @@ class User extends uniqueFunc(Model) {
     };
   }
 
+  static get relationMappings() {
+    const { VideoLink } = require("./index.js")
+    return {
+      videoLinks: {
+        relation: Model.HasManyRelation,
+        modelClass: VideoLink,
+        join: {
+          from: "users.id",
+          to: "videoLinks.userId"
+        }
+      }
+    }
+  }
+
   $formatJson(json) {
     const serializedJson = super.$formatJson(json);
 
