@@ -18,7 +18,12 @@ videoLinksRouter.post("/", async (req, res) => {
     try {
         const { body } = req
         const cleanedInput = cleanUserInput(body.videoLink)
-        const userId = req.user.id
+        let userId 
+        if (req.user) {
+            userId = req.user.id
+        } else {
+            userId = 1
+        }
         const newVideoLinkObject = {
             fullUrl: cleanedInput,
             userId: userId
