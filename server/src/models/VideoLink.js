@@ -7,11 +7,28 @@ class VideoLink extends Model {
     static get jsonSchema() {
         return {
             type: "object",
-            required: ["fullUrl", "userId"],
+            required: ["fullUrl"],
             properties: {
                 fullUrl: { type: "string" },
-                userId: { type: ["integer", "string"]}
-            }
+                userId: { type: ["integer", "string"] },
+                anonymousSubmission: { type: "boolean" }
+            },
+            allOf: [
+                {
+                    "if": {
+                        "properties": {"anonymousSubmission": {"const": true}},
+                        "required": ["anonymousSubmission"],
+                    },
+                    "then": {"properties": {"userId": {"const": null}}},
+                },
+                {
+                    "if": {
+                        "properties": {"anonymousSubmission": {"const": false}},
+                        "required": ["anonymousSubmission"],
+                    },
+                    "then": {"properties": {"userId": {"type": "integer"}}},
+                },
+            ],
         }
     }
 

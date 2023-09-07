@@ -18,15 +18,13 @@ videoLinksRouter.post("/", async (req, res) => {
     try {
         const { body } = req
         const cleanedInput = cleanUserInput(body.videoLink)
-        let userId 
-        if (req.user) {
-            userId = req.user.id
-        } else {
-            userId = 1
-        }
         const newVideoLinkObject = {
             fullUrl: cleanedInput,
-            userId: userId
+        }
+        if (req.user) {
+            newVideoLinkObject.userId = req.user.id
+        } else {
+            newVideoLinkObject.anonymousSubmission = true
         }
         const videoLink = await VideoLink.query().insertAndFetch(newVideoLinkObject)
         res.set({"Content-Type": "application/json"}).status(201).json({ videoLink: videoLink })
@@ -34,6 +32,7 @@ videoLinksRouter.post("/", async (req, res) => {
         if (err instanceof ValidationError) {
             res.status(422).json({ errors: err.data })
         } else {
+            console.error(err.message)
             res.status(500).json({ errors: err.message })
         }
     }
