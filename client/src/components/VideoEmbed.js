@@ -1,9 +1,13 @@
-import React from 'react';
+import React from 'react'
 import ReactPlayer from 'react-player'
-import { useState, useEffect, useRef } from 'react';
+import { format } from 'date-fns'
+import { useState, useEffect, useRef } from 'react'
 
 const VideoEmbed = (props) => {
-    const [url, setUrl] = useState("")
+    const [video, setVideo] = useState({
+        fullUrl: "",
+        updatedAt: new Date()
+    })
     const [videoLink, setVideoLink] = useState("")
     const [seekTime, setSeekTime] = useState(0)
     const playerRef = useRef()
@@ -15,7 +19,11 @@ const VideoEmbed = (props) => {
             if (!response.ok) {
                 throw new Error(`${response.status} (${response.statusText})`)
             }
-            setUrl(responseBody.videoLink.fullUrl)
+            const videoObject = {
+                fullUrl: responseBody.videoLink.fullUrl,
+                updatedAt: new Date(responseBody.videoLink.updatedAt)
+            }
+            setVideo(videoObject)
             const videoTime = new Date(responseBody.videoLink.updatedAt)
             const currentTime = new Date()
             const timeElapsed = (currentTime - videoTime) / 1000
@@ -42,6 +50,7 @@ const VideoEmbed = (props) => {
             console.error("Error in fetch", err.message)
         }
     }
+    const formattedTime = format(video.updatedAt, 'MMMM dd, yyyy HH:mm') 
 
     useEffect(() => {
         getVideoLink()
@@ -62,7 +71,7 @@ const VideoEmbed = (props) => {
     const handleSubmit = (event) => {
         event.preventDefault()
         postNewVideoLink()
-        setUrl(videoLink)
+        setVideo({ ...video, fullUrl: videoLink })
     }
 
     return (
@@ -73,8 +82,11 @@ const VideoEmbed = (props) => {
                 volume={null}
                 muted={true}
                 playing={true}
-                url={url}
+                url={video.fullUrl}
             />
+            <h5>
+                Video Submission Time: {formattedTime}
+            </h5>
             <form onSubmit={handleSubmit}>
                 <label htmlFor='videoLink'>
                     Video Link
