@@ -2,6 +2,7 @@ import React from 'react'
 import ReactPlayer from 'react-player'
 import { format } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
+import VideoLinksBox from './VideoLinksBox'
 
 const VideoEmbed = (props) => {
     const [video, setVideo] = useState({
@@ -99,6 +100,7 @@ const VideoEmbed = (props) => {
                 </label>
                 <input type="submit" value="Submit" />
             </form>
+            <VideoLinksBox videoLink={video.fullUrl} />
         </div>
     )
 }
