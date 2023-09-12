@@ -100,7 +100,7 @@ const VideoEmbed = (props) => {
                 </label>
                 <input type="submit" value="Submit" />
             </form>
-            <VideoLinksBox videoLink={video.fullUrl} />
+            <VideoLinksBox videoLink={video.fullUrl} videoLinks={props.videoLinks} />
         </div>
     )
 }
