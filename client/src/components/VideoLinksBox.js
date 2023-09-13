@@ -1,14 +1,15 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
 
 const VideoLinksBox = (props) => {
-    console.log("video Links is: ",props.videoLinks)
+    const boxText = props.videoLinks.join('\n')
 
     return(
-        <textArea rows="6">
-            {props.videoLink}
-            {props.videoLinks}
-        </textArea>
+        <div>
+            <h6>
+                New videos received
+            </h6>
+            <textarea rows="6" value={boxText} />
+        </div>
     )
 }
 

@@ -29,19 +29,8 @@ videoLinksRouter.post("/", async (req, res) => {
             newVideoLinkObject.anonymousSubmission = true
         }
         const videoLink = await VideoLink.query().insertAndFetch(newVideoLinkObject)
-
-        //send websockets message
-        // wss.on('connection', ws => {
-        //     ws.on('message', message => {
-        //       wss.clients.forEach(client => {
-        //         console.log("testing")
-        //         console.log("testing2", message)
-        //       })
-        //     })
-        //   })
         const wss = appAndWss.wss
         wss.clients.forEach(client => {
-            console.log("videoLinksRouter test")
             if (client.readyState === WebSocket.OPEN) {
                 client.send(videoLink.fullUrl)
             }

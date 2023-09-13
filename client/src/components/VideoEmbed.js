@@ -9,6 +9,7 @@ const VideoEmbed = (props) => {
         fullUrl: "",
         updatedAt: new Date()
     })
+    const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
     const [seekTime, setSeekTime] = useState(0)
     const playerRef = useRef()
@@ -25,6 +26,7 @@ const VideoEmbed = (props) => {
                 updatedAt: new Date(responseBody.videoLink.updatedAt)
             }
             setVideo(videoObject)
+            setInitialVideo(responseBody.videoLink.fullUrl)
             const videoTime = new Date(responseBody.videoLink.updatedAt)
             const currentTime = new Date()
             const timeElapsed = (currentTime - videoTime) / 1000
@@ -51,7 +53,7 @@ const VideoEmbed = (props) => {
             console.error("Error in fetch", err.message)
         }
     }
-    const formattedTime = format(video.updatedAt, 'MMMM dd, yyyy HH:mm') 
+    const formattedTime = format(video.updatedAt, 'MMMM dd, yyyy HH:mm')
 
     useEffect(() => {
         getVideoLink()
@@ -72,7 +74,7 @@ const VideoEmbed = (props) => {
     const handleSubmit = (event) => {
         event.preventDefault()
         postNewVideoLink()
-        setVideo({ ...video, fullUrl: videoLink })
+        setVideo({ updatedAt: new Date(), fullUrl: videoLink })
     }
 
     return (
@@ -100,7 +102,7 @@ const VideoEmbed = (props) => {
                 </label>
                 <input type="submit" value="Submit" />
             </form>
-            <VideoLinksBox videoLink={video.fullUrl} videoLinks={props.videoLinks} />
+            First video link: {initialVideo}
         </div>
     )
 }
