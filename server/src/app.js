@@ -11,6 +11,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 import hbsMiddleware from "express-handlebars";
+import WebSocket from 'ws'
+
+const wss = new WebSocket.Server({ port: 8080 })
+
 app.set("views", path.join(__dirname, "../views"));
 app.engine(
   "hbs",
@@ -34,4 +38,4 @@ app.use(rootRouter);
 app.listen(configuration.web.port, configuration.web.host, () => {
   console.log("Server is listening...");
 });
-export default app;
+export default { app, wss };
