@@ -2,7 +2,6 @@ import React from 'react'
 import ReactPlayer from 'react-player'
 import { format } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
-import VideoLinksBox from './VideoLinksBox'
 
 const VideoEmbed = (props) => {
     const [video, setVideo] = useState({
@@ -65,6 +64,13 @@ const VideoEmbed = (props) => {
         }
     }, [seekTime])
     
+    useEffect(() => {
+        setVideo({
+            updatedAt: new Date(), 
+            fullUrl: props.videoLinks[props.videoLinks.length - 1]
+        })
+    }, [props.videoLinks])
+    
     const handleInputChange = (event) => {
         setVideoLink(    
             event.currentTarget.value
@@ -74,7 +80,6 @@ const VideoEmbed = (props) => {
     const handleSubmit = (event) => {
         event.preventDefault()
         postNewVideoLink()
-        setVideo({ updatedAt: new Date(), fullUrl: videoLink })
     }
 
     return (
