@@ -32,7 +32,11 @@ videoLinksRouter.post("/", async (req, res) => {
         const wss = appAndWss.wss
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(videoLink.fullUrl)
+                const messageObject = {
+                    type: "videoLink",
+                    content: videoLink.fullUrl
+                }
+                client.send(JSON.stringify(messageObject))
             }
         })
         

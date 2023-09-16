@@ -5,14 +5,22 @@ import VideoLinksBox from './VideoLinksBox'
 
 const Home = (props) => {
     const [videoLinks, setVideoLinks] = useState([])
+    const [networkSeekTime, setNetworkSeekTime] = useState(0)
+    const [socket, setSocket] = useState(null)
     
     const readNewMessage = (event) => {
-        setVideoLinks((videoLinks) => [ ...videoLinks, `${event.data}` ])
+        const receivedData = JSON.parse(event.data)
+        if (receivedData.type === "videoLink") {
+            setVideoLinks((videoLinks) => [ ...videoLinks, `${receivedData.content}` ])
+        } else if (receivedData.type === "seekTime") {
+            setNetworkSeekTime(receivedData.content)
+        }
     }
 
     useEffect(() => {
         const socket = new WebSocket('ws://localhost:8080')
         socket.addEventListener('message', readNewMessage)
+        setSocket(socket)
         return(() => {
             socket.close()
         })
@@ -20,7 +28,7 @@ const Home = (props) => {
     
     return (
         <div>
-            <VideoEmbed videoLinks={videoLinks} />
+            <VideoEmbed videoLinks={videoLinks} networkSeekTime={networkSeekTime} socket={socket}/>
             <VideoLinksBox videoLinks={videoLinks} />
         </div>
     )

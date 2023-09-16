@@ -10,7 +10,10 @@ const VideoEmbed = (props) => {
     })
     const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
-    const [seekTime, setSeekTime] = useState(0)
+    const [initialSeekTime, setInitialSeekTime] = useState(0)
+    const [played, setPlayed] = useState(0)
+    const [seeking, setSeeking] = useState(false)
+
     const playerRef = useRef()
 
     const getVideoLink = async () => {
@@ -29,7 +32,7 @@ const VideoEmbed = (props) => {
             const videoTime = new Date(responseBody.videoLink.updatedAt)
             const currentTime = new Date()
             const timeElapsed = (currentTime - videoTime) / 1000
-            setSeekTime(timeElapsed)
+            setInitialSeekTime(timeElapsed)
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -60,9 +63,15 @@ const VideoEmbed = (props) => {
     
     useEffect(() => {
         if(playerRef.current) {
-            playerRef.current.seekTo(seekTime)
+            playerRef.current.seekTo(initialSeekTime)
         }
-    }, [seekTime])
+    }, [initialSeekTime])
+
+    useEffect(() => {
+        if(playerRef.current) {
+            playerRef.current.seekTo(props.networkSeekTime, "fraction")
+        }
+    }, [props.networkSeekTime])
     
     useEffect(() => {
         setVideo({
@@ -82,19 +91,58 @@ const VideoEmbed = (props) => {
         postNewVideoLink()
     }
 
+    const handleSeekMouseDown = (event) => {
+        setSeeking(true)
+    }
+
+    const handleSeekChange = (event) => {
+        setPlayed(parseFloat(event.target.value))
+    }
+    
+    const handleSeekMouseUp = (event) => {
+        setSeeking(false)
+        setPlayed(parseFloat(event.target.value))
+        const messageObject = {
+            type: "seekTime",
+            content: parseFloat(event.target.value)
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
+
+    const handleProgress = (state) => {
+        if (!seeking) {
+            setPlayed(state.played)
+        }
+    }
+
     return (
         <div>
-            <ReactPlayer
-                ref={playerRef}
-                controls={true}
-                volume={null}
-                muted={true}
-                playing={true}
-                url={video.fullUrl}
-            />
-            <h5>
-                Video Submission Time: {formattedTime}
-            </h5>
+            <div className="player-container">
+                <ReactPlayer
+                    ref={playerRef}
+                    controls={true}
+                    volume={null}
+                    muted={true}
+                    playing={true}
+                    url={video.fullUrl}
+                    onProgress={handleProgress}
+                />
+                <h5>
+                    Video Submission Time: {formattedTime}
+                </h5>
+                <h6>
+                    Synchronized Seek Time
+                </h6>
+                <input
+                    className="seek-bar"
+                    type="range" min={0} max={0.999999} step="any"
+                    value={played}
+                    onMouseDown={handleSeekMouseDown}
+                    onChange={handleSeekChange}
+                    onMouseUp={handleSeekMouseUp}
+                />
+            </div>
+
             <form onSubmit={handleSubmit}>
                 <label htmlFor='videoLink'>
                     Video Link
