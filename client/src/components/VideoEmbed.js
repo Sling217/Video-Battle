@@ -13,6 +13,7 @@ const VideoEmbed = (props) => {
     const [initialSeekTime, setInitialSeekTime] = useState(0)
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
+    const [muted, setMuted] = useState(true)
 
     const playerRef = useRef()
 
@@ -63,12 +64,6 @@ const VideoEmbed = (props) => {
     
     useEffect(() => {
         if(playerRef.current) {
-            playerRef.current.seekTo(initialSeekTime)
-        }
-    }, [initialSeekTime])
-
-    useEffect(() => {
-        if(playerRef.current) {
             playerRef.current.seekTo(props.networkSeekTime, "fraction")
         }
     }, [props.networkSeekTime])
@@ -78,14 +73,23 @@ const VideoEmbed = (props) => {
             updatedAt: new Date(), 
             fullUrl: props.videoLinks[props.videoLinks.length - 1]
         })
+        setPlayed(0)
+        setInitialSeekTime(0)
+        playerRef.current.seekTo(0)
+
     }, [props.videoLinks])
     
+    const setStart = () => {
+        const videoLength = playerRef.current.getDuration()
+        playerRef.current.seekTo(initialSeekTime % videoLength )
+    }
+
     const handleInputChange = (event) => {
         setVideoLink(    
             event.currentTarget.value
         )
     }
-
+        
     const handleSubmit = (event) => {
         event.preventDefault()
         postNewVideoLink()
@@ -114,6 +118,10 @@ const VideoEmbed = (props) => {
             setPlayed(state.played)
         }
     }
+    
+    const handleMuteButton = () => {
+        setMuted(!muted)
+    }
 
     return (
         <div>
@@ -122,10 +130,12 @@ const VideoEmbed = (props) => {
                     ref={playerRef}
                     controls={true}
                     volume={null}
-                    muted={true}
+                    muted={muted}
+                    loop={true}
                     playing={true}
                     url={video.fullUrl}
                     onProgress={handleProgress}
+                    onStart={setStart}
                 />
                 <h5>
                     Video Submission Time: {formattedTime}
@@ -154,6 +164,7 @@ const VideoEmbed = (props) => {
                     />
                 </label>
                 <input type="submit" value="Submit" />
+                <input type="button" value={muted ? "unmute" : "mute"} onClick={handleMuteButton} />
             </form>
             First video link: {initialVideo}
         </div>
