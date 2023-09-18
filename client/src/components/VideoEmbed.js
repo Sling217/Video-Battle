@@ -52,6 +52,7 @@ const VideoEmbed = (props) => {
                 const errorMessage = await response.json()
                 throw new Error(errorMessage)
             }
+            setVideoLink("")
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -123,6 +124,14 @@ const VideoEmbed = (props) => {
         setMuted(!muted)
     }
 
+    const handlePauseButton = () => {
+        const messageObject = {
+            type: "pause",
+            content: !props.playing
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
+
     return (
         <div>
             <div className="player-container">
@@ -132,7 +141,7 @@ const VideoEmbed = (props) => {
                     volume={null}
                     muted={muted}
                     loop={true}
-                    playing={true}
+                    playing={props.playing}
                     url={video.fullUrl}
                     onProgress={handleProgress}
                     onStart={setStart}
@@ -140,6 +149,11 @@ const VideoEmbed = (props) => {
                 <h5>
                     Video Submission Time: {formattedTime}
                 </h5>
+            </div>
+            <div className="callout">
+                <h6>
+                    Networked video controls
+                </h6>
                 <h6>
                     Synchronized Seek Time
                 </h6>
@@ -151,21 +165,21 @@ const VideoEmbed = (props) => {
                     onChange={handleSeekChange}
                     onMouseUp={handleSeekMouseUp}
                 />
+                <form onSubmit={handleSubmit}>
+                    <label htmlFor='videoLink'>
+                        Video Link
+                        <input
+                            type="text"
+                            name="videoLink"
+                            onChange={handleInputChange}
+                            value={videoLink}
+                        />
+                    </label>
+                    <input type="submit" value="Submit" />
+                    <input type="button" value={muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
+                    <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
+                </form>
             </div>
-
-            <form onSubmit={handleSubmit}>
-                <label htmlFor='videoLink'>
-                    Video Link
-                    <input
-                        type="text"
-                        name="videoLink"
-                        onChange={handleInputChange}
-                        value={videoLink}
-                    />
-                </label>
-                <input type="submit" value="Submit" />
-                <input type="button" value={muted ? "unmute" : "mute"} onClick={handleMuteButton} />
-            </form>
             First video link: {initialVideo}
         </div>
     )
