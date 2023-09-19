@@ -13,7 +13,6 @@ const VideoEmbed = (props) => {
     const [initialSeekTime, setInitialSeekTime] = useState(0)
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
-    const [muted, setMuted] = useState(true)
 
     const playerRef = useRef()
 
@@ -119,15 +118,19 @@ const VideoEmbed = (props) => {
             setPlayed(state.played)
         }
     }
-    
-    const handleMuteButton = () => {
-        setMuted(!muted)
-    }
 
     const handlePauseButton = () => {
         const messageObject = {
             type: "pause",
             content: !props.playing
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
+
+    const handleMuteButton = () => {
+        const messageObject = {
+            type: "mute",
+            content: !props.muted
         }
         props.socket.send(JSON.stringify(messageObject))
     }
@@ -139,9 +142,9 @@ const VideoEmbed = (props) => {
                     ref={playerRef}
                     controls={true}
                     volume={null}
-                    muted={muted}
                     loop={true}
                     playing={props.playing}
+                    muted={props.muted}
                     url={video.fullUrl}
                     onProgress={handleProgress}
                     onStart={setStart}
@@ -176,7 +179,7 @@ const VideoEmbed = (props) => {
                         />
                     </label>
                     <input type="submit" value="Submit" />
-                    <input type="button" value={muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
+                    <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
                 </form>
             </div>

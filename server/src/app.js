@@ -18,7 +18,9 @@ const wss = new WebSocket.Server({ port: 8080 })
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     const receivedData = JSON.parse(message)
-    if (receivedData.type === "seekTime" || receivedData.type === "pause") {
+    if (receivedData.type === "seekTime" || 
+      receivedData.type === "pause" || 
+      receivedData.type === "mute") {
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(message)

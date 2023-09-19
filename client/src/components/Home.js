@@ -8,6 +8,7 @@ const Home = (props) => {
     const [networkSeekTime, setNetworkSeekTime] = useState(0)
     const [socket, setSocket] = useState(null)
     const [playing, setPlaying] = useState(true)
+    const [muted, setMuted] = useState(true)
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
@@ -17,6 +18,8 @@ const Home = (props) => {
             setNetworkSeekTime(receivedData.content)
         } else if (receivedData.type === "pause") {
             setPlaying(receivedData.content)
+        } else if (receivedData.type === "mute") {
+            setMuted(receivedData.content)
         }
     }
 
@@ -34,8 +37,9 @@ const Home = (props) => {
             <VideoEmbed
                 videoLinks={videoLinks}
                 networkSeekTime={networkSeekTime}
-                playing={playing}
                 socket={socket}
+                playing={playing}
+                muted={muted}
             />
             <VideoLinksBox videoLinks={videoLinks} />
         </div>
