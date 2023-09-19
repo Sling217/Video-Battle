@@ -7,7 +7,6 @@ import "../assets/scss/main.scss";
 import RegistrationForm from "./registration/RegistrationForm";
 import SignInForm from "./authentication/SignInForm";
 import TopBar from "./layout/TopBar";
-import VideoEmbed from "./VideoEmbed";
 import Home from "./Home";
 
 const App = (props) => {
