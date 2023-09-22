@@ -108,7 +108,8 @@ const VideoEmbed = (props) => {
         setPlayed(parseFloat(event.target.value))
         const messageObject = {
             type: "seekTime",
-            content: parseFloat(event.target.value)
+            content: parseFloat(event.target.value),
+            duration: playerRef.current.getDuration()
         }
         props.socket.send(JSON.stringify(messageObject))
     }
