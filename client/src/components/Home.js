@@ -14,12 +14,17 @@ const Home = (props) => {
         const receivedData = JSON.parse(event.data)
         if (receivedData.type === "videoLink") {
             setVideoLinks((videoLinks) => [ ...videoLinks, `${receivedData.content}` ])
+            setNetworkSeekTime(0) // check here for DEBUGging
         } else if (receivedData.type === "seekTime") {
             setNetworkSeekTime(receivedData.content)
-        } else if (receivedData.type === "pause") {
+        } else if (receivedData.type === "playing") {
             setPlaying(receivedData.content)
-        } else if (receivedData.type === "mute") {
+        } else if (receivedData.type === "muted") {
             setMuted(receivedData.content)
+        } else if (receivedData.type === "initial") {
+            setPlaying(receivedData.content.playing)
+            setMuted(receivedData.content.muted)
+            setNetworkSeekTime(receivedData.content.networkSeekTime)
         }
     }
 

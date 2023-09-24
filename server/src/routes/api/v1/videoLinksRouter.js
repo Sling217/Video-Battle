@@ -2,7 +2,7 @@ import express from "express"
 import { VideoLink } from "../../../models/index.js"
 import { ValidationError } from "objection"
 import cleanUserInput from "../../../services/cleanUserInput.js"
-import appAndWss from "../../../app.js"
+import app from "../../../app.js"
 import WebSocket from 'ws'
 
 const videoLinksRouter = new express.Router()
@@ -29,7 +29,7 @@ videoLinksRouter.post("/", async (req, res) => {
             newVideoLinkObject.anonymousSubmission = true
         }
         const videoLink = await VideoLink.query().insertAndFetch(newVideoLinkObject)
-        const wss = appAndWss.wss
+        const wss = app.wss
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 const messageObject = {
@@ -39,6 +39,7 @@ videoLinksRouter.post("/", async (req, res) => {
                 client.send(JSON.stringify(messageObject))
             }
         })
+        app.videoLinkProcessed.emit('videoLinkPostTime', new Date())
         
         res.set({"Content-Type": "application/json"}).status(201).json({ videoLink: videoLink })
     } catch(err) {

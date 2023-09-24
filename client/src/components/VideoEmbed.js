@@ -10,7 +10,7 @@ const VideoEmbed = (props) => {
     })
     const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
-    const [initialSeekTime, setInitialSeekTime] = useState(0)
+    // const [initialSeekTime, setInitialSeekTime] = useState(0)
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
 
@@ -29,10 +29,10 @@ const VideoEmbed = (props) => {
             }
             setVideo(videoObject)
             setInitialVideo(responseBody.videoLink.fullUrl)
-            const videoTime = new Date(responseBody.videoLink.updatedAt)
-            const currentTime = new Date()
-            const timeElapsed = (currentTime - videoTime) / 1000
-            setInitialSeekTime(timeElapsed)
+            // const videoTime = new Date(responseBody.videoLink.updatedAt)
+            // const currentTime = new Date()
+            // const timeElapsed = (currentTime - videoTime) / 1000
+            // setInitialSeekTime(timeElapsed)
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -64,7 +64,7 @@ const VideoEmbed = (props) => {
     
     useEffect(() => {
         if(playerRef.current) {
-            playerRef.current.seekTo(props.networkSeekTime, "fraction")
+            playerRef.current.seekTo(props.networkSeekTime, "seconds")
         }
     }, [props.networkSeekTime])
     
@@ -74,14 +74,16 @@ const VideoEmbed = (props) => {
             fullUrl: props.videoLinks[props.videoLinks.length - 1]
         })
         setPlayed(0)
-        setInitialSeekTime(0)
+        // setInitialSeekTime(0)
         playerRef.current.seekTo(0)
 
     }, [props.videoLinks])
     
     const setStart = () => {
-        const videoLength = playerRef.current.getDuration()
-        playerRef.current.seekTo(initialSeekTime % videoLength )
+        // const videoLength = playerRef.current.getDuration()
+        // playerRef.current.seekTo(initialSeekTime % videoLength )
+        // DEBUG here?
+        playerRef.current.seekTo(props.networkSeekTime)
     }
 
     const handleInputChange = (event) => {
@@ -106,31 +108,38 @@ const VideoEmbed = (props) => {
     const handleSeekMouseUp = (event) => {
         setSeeking(false)
         setPlayed(parseFloat(event.target.value))
-        const messageObject = {
-            type: "seekTime",
-            content: parseFloat(event.target.value),
-            duration: playerRef.current.getDuration()
+        const duration = playerRef.current.getDuration()
+        if (duration) {
+            const seekTimeSeconds = parseFloat(event.target.value)*duration
+            const messageObject = {
+                type: "seekTime",
+                content: seekTimeSeconds
+            }
+            props.socket.send(JSON.stringify(messageObject))
         }
-        props.socket.send(JSON.stringify(messageObject))
     }
-
+    
     const handleProgress = (state) => {
         if (!seeking) {
             setPlayed(state.played)
         }
     }
-
+    
     const handlePauseButton = () => {
-        const messageObject = {
-            type: "pause",
-            content: !props.playing
+        const seekTimeSeconds = playerRef.current.getCurrentTime()
+        if (seekTimeSeconds) {
+            const messageObject = {
+                type: "playing",
+                content: !props.playing,
+                seekTimeSeconds: seekTimeSeconds
+            }
+            props.socket.send(JSON.stringify(messageObject))
         }
-        props.socket.send(JSON.stringify(messageObject))
     }
 
     const handleMuteButton = () => {
         const messageObject = {
-            type: "mute",
+            type: "muted",
             content: !props.muted
         }
         props.socket.send(JSON.stringify(messageObject))
