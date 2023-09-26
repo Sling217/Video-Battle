@@ -10,7 +10,6 @@ const VideoEmbed = (props) => {
     })
     const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
-    // const [initialSeekTime, setInitialSeekTime] = useState(0)
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
 
@@ -29,10 +28,6 @@ const VideoEmbed = (props) => {
             }
             setVideo(videoObject)
             setInitialVideo(responseBody.videoLink.fullUrl)
-            // const videoTime = new Date(responseBody.videoLink.updatedAt)
-            // const currentTime = new Date()
-            // const timeElapsed = (currentTime - videoTime) / 1000
-            // setInitialSeekTime(timeElapsed)
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -74,16 +69,15 @@ const VideoEmbed = (props) => {
             fullUrl: props.videoLinks[props.videoLinks.length - 1]
         })
         setPlayed(0)
-        // setInitialSeekTime(0)
         playerRef.current.seekTo(0)
-
     }, [props.videoLinks])
     
     const setStart = () => {
-        // const videoLength = playerRef.current.getDuration()
-        // playerRef.current.seekTo(initialSeekTime % videoLength )
-        // DEBUG here?
         playerRef.current.seekTo(props.networkSeekTime)
+        if (!props.playing) {
+            playerRef.current.getInternalPlayer().playVideo()
+            setTimeout(() => playerRef.current.getInternalPlayer().pauseVideo(), 250)
+        }
     }
 
     const handleInputChange = (event) => {
@@ -127,7 +121,7 @@ const VideoEmbed = (props) => {
     
     const handlePauseButton = () => {
         const seekTimeSeconds = playerRef.current.getCurrentTime()
-        if (seekTimeSeconds) {
+        if (seekTimeSeconds !== null) {
             const messageObject = {
                 type: "playing",
                 content: !props.playing,
@@ -157,7 +151,7 @@ const VideoEmbed = (props) => {
                     muted={props.muted}
                     url={video.fullUrl}
                     onProgress={handleProgress}
-                    onStart={setStart}
+                    onReady={setStart}
                 />
                 <h5>
                     Video Submission Time: {formattedTime}

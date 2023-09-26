@@ -24,11 +24,9 @@ const channelState = {
 }
 
 const videoLinkProcessed = new EventEmitter()
-
 videoLinkProcessed.on('videoLinkPostTime', (data) => {
   channelState.timeSeekReceived = data
-  seekTimeSeconds = 0
-  console.log("video event emission received", data)
+  channelState.seekTimeSeconds = 0
 })
 
 const getSeekTimeInSeconds = (channelState) => {
