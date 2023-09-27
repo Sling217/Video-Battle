@@ -13,6 +13,7 @@ const app = express();
 import hbsMiddleware from "express-handlebars";
 import WebSocket from 'ws'
 import EventEmitter from "events";
+import User from "./models/User.js";
 
 const wss = new WebSocket.Server({ port: 8080 })
 
@@ -56,7 +57,62 @@ const shouldForwardMessage = (message) => {
   }
 }
 
-wss.on('connection', (ws) => {
+//start work on associating websockets connection with user email
+const parseSessionKey = (fullCookie) => {
+  // to get the user's email address
+  // read req.[Symbol(kHeaders)].cookie
+  // maybe just req.headers.cookie
+  // parse the string for 'video-battle-session=eyJwYXNzcG9ydCI6eyJ1c2VyIjoiMSJ9fQ==;
+  // base64 decode, result is like: {"passport":{"user":"1"}}
+  // run passport deserializeUser on that ID
+  // returns const user = await User.query().findById(id);
+  // email would be user.email
+
+  const cookies = fullCookie.split(';')
+  const sessionCookie = cookies.find(cookie => cookie.trim().startsWith('video-battle-session='))
+  if (!sessionCookie) {
+    return null
+  }
+  return(sessionCookie.split('=')[1]) //BREAKS if no cookie
+}
+
+// const getUserEmail = async (userId) => {
+//   const placeholder = (user) => {
+//     return "blah"
+//   }
+//   const userObject = await deserializeUser(userId, placeholder)
+//   return userObject
+// }
+
+let id = 0
+wss.on('connection', (ws, req) => {
+  ws.id = id
+  id++
+
+  const sessionKey = parseSessionKey(req.headers.cookie)
+  console.log("sessions key parsed: ", sessionKey)
+  const sessionContent = Buffer.from(sessionKey, 'base64').toString('utf8')
+  console.log("session content is: ", sessionContent)
+  console.log("session content is: ", JSON.parse(sessionContent))
+  const userId = JSON.parse(sessionContent).passport.user
+  console.log("user ID is: ", userId)
+
+  if(userId !== undefined) {
+    User.query().findById(userId).then(userObject => {
+      console.log("user object is: ", userObject)
+      ws.userEmail = userObject.email
+    })
+  } else {
+    ws.userEmail = "anonymous"
+  }
+
+  // getUserEmail(userId).then(userObject => {
+  //   console.log("user object is: ", userObject)
+  // })
+
+  // console.log("user object is: ", getUserEmail(userId))
+//end work
+
   const initialState = {
     playing: channelState.playing,
     muted: channelState.muted,
