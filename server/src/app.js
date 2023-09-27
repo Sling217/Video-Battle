@@ -57,61 +57,33 @@ const shouldForwardMessage = (message) => {
   }
 }
 
-//start work on associating websockets connection with user email
 const parseSessionKey = (fullCookie) => {
-  // to get the user's email address
-  // read req.[Symbol(kHeaders)].cookie
-  // maybe just req.headers.cookie
-  // parse the string for 'video-battle-session=eyJwYXNzcG9ydCI6eyJ1c2VyIjoiMSJ9fQ==;
-  // base64 decode, result is like: {"passport":{"user":"1"}}
-  // run passport deserializeUser on that ID
-  // returns const user = await User.query().findById(id);
-  // email would be user.email
-
   const cookies = fullCookie.split(';')
   const sessionCookie = cookies.find(cookie => cookie.trim().startsWith('video-battle-session='))
   if (!sessionCookie) {
     return null
   }
-  return(sessionCookie.split('=')[1]) //BREAKS if no cookie
+  return(sessionCookie.split('=')[1])
 }
 
-// const getUserEmail = async (userId) => {
-//   const placeholder = (user) => {
-//     return "blah"
-//   }
-//   const userObject = await deserializeUser(userId, placeholder)
-//   return userObject
-// }
-
-let id = 0
-wss.on('connection', (ws, req) => {
-  ws.id = id
-  id++
-
-  const sessionKey = parseSessionKey(req.headers.cookie)
-  console.log("sessions key parsed: ", sessionKey)
-  const sessionContent = Buffer.from(sessionKey, 'base64').toString('utf8')
-  console.log("session content is: ", sessionContent)
-  console.log("session content is: ", JSON.parse(sessionContent))
-  const userId = JSON.parse(sessionContent).passport.user
-  console.log("user ID is: ", userId)
-
-  if(userId !== undefined) {
-    User.query().findById(userId).then(userObject => {
-      console.log("user object is: ", userObject)
-      ws.userEmail = userObject.email
-    })
-  } else {
-    ws.userEmail = "anonymous"
+const sessionToUserEmail = async (sessionKey) => {
+  if (sessionKey === null) {
+    return "anonymous"
   }
+  const sessionContent = Buffer.from(sessionKey, 'base64').toString('utf8')
+  const userId = JSON.parse(sessionContent).passport.user
+  if (userId === undefined) {
+    return "anonymous"
+  }
+  const userObject = await User.query().findById(userId)
+  return userObject.email
+}
 
-  // getUserEmail(userId).then(userObject => {
-  //   console.log("user object is: ", userObject)
-  // })
-
-  // console.log("user object is: ", getUserEmail(userId))
-//end work
+wss.on('connection', (ws, req) => {
+  const sessionKey = parseSessionKey(req.headers.cookie)
+  sessionToUserEmail(sessionKey).then( (userEmail) => {
+    ws.userEmail = userEmail
+  })
 
   const initialState = {
     playing: channelState.playing,
