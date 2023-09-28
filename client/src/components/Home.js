@@ -2,6 +2,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import VideoEmbed from './VideoEmbed'
 import VideoLinksBox from './VideoLinksBox'
+import UserList from './UserList'
 
 const Home = (props) => {
     const [videoLinks, setVideoLinks] = useState([])
@@ -9,6 +10,7 @@ const Home = (props) => {
     const [socket, setSocket] = useState(null)
     const [playing, setPlaying] = useState(true)
     const [muted, setMuted] = useState(true)
+    const [userList, setUserList] = useState([])
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
@@ -25,6 +27,9 @@ const Home = (props) => {
             setPlaying(receivedData.content.playing)
             setMuted(receivedData.content.muted)
             setNetworkSeekTime(parseFloat(receivedData.content.networkSeekTime))
+        } else if (receivedData.type === "userList") {
+            console.log("received userList", receivedData.content)
+            setUserList(receivedData.content)
         }
     }
 
@@ -47,6 +52,7 @@ const Home = (props) => {
                 muted={muted}
             />
             <VideoLinksBox videoLinks={videoLinks} />
+            <UserList userList={userList} />
         </div>
     )
 }
