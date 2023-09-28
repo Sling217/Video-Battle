@@ -58,6 +58,9 @@ const shouldForwardMessage = (message) => {
 }
 
 const parseSessionKey = (fullCookie) => {
+  if (!fullCookie) {
+    return null
+  }
   const cookies = fullCookie.split(';')
   const sessionCookie = cookies.find(cookie => cookie.trim().startsWith('video-battle-session='))
   if (!sessionCookie) {
@@ -83,6 +86,42 @@ wss.on('connection', (ws, req) => {
   const sessionKey = parseSessionKey(req.headers.cookie)
   sessionToUserEmail(sessionKey).then( (userEmail) => {
     ws.userEmail = userEmail
+  }).then(() => {
+    const users = []
+    wss.clients.forEach((client) => {
+      console.log("inside forEach, userEmail is: ", client.userEmail)
+      users.push(client.userEmail)
+      console.log("users array should have a user now: ", users)
+    })
+    const messageUserList = {
+      type: "userList",
+      content: users
+    }
+    console.log("messageUserList is: ", messageUserList)
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(messageUserList))
+      }
+    })
+  })
+
+  ws.on('close', () => {
+    const users = []
+    wss.clients.forEach((client) => {
+      console.log("inside forEach, userEmail is: ", client.userEmail)
+      users.push(client.userEmail)
+      console.log("users array should have a user now: ", users)
+    })
+    const messageUserList = {
+      type: "userList",
+      content: users
+    }
+    console.log("messageUserList is: ", messageUserList)
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(messageUserList))
+      }
+    })
   })
 
   const initialState = {
@@ -95,6 +134,7 @@ wss.on('connection', (ws, req) => {
     content: initialState
   }
   ws.send(JSON.stringify(messageObject))
+
   ws.on('message', (message) => {
     const receivedData = JSON.parse(message)
     if (shouldForwardMessage(receivedData)) {
