@@ -11,11 +11,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 import hbsMiddleware from "express-handlebars";
-import WebSocket from 'ws'
+import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
 
-const wss = new WebSocket.Server({ port: 8080 })
+const wss = new WebSocketServer({ port: 8080 })
 
 const channelState = {
   playing: true,
