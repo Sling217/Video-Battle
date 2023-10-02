@@ -13,6 +13,7 @@ const app = express();
 import hbsMiddleware from "express-handlebars";
 import WebSocket from 'ws'
 import EventEmitter from "events";
+import User from "./models/User.js";
 
 const wss = new WebSocket.Server({ port: 8080 })
 
@@ -56,7 +57,67 @@ const shouldForwardMessage = (message) => {
   }
 }
 
-wss.on('connection', (ws) => {
+const parseSessionKey = (fullCookie) => {
+  if (!fullCookie) {
+    return null
+  }
+  const cookies = fullCookie.split(';')
+  const sessionCookie = cookies.find(cookie => cookie.trim().startsWith('video-battle-session='))
+  if (!sessionCookie) {
+    return null
+  }
+  return(sessionCookie.split('=')[1])
+}
+
+const sessionToUserEmail = async (sessionKey) => {
+  if (sessionKey === null) {
+    return "anonymous"
+  }
+  const sessionContent = Buffer.from(sessionKey, 'base64').toString('utf8')
+  const userId = JSON.parse(sessionContent).passport.user
+  if (userId === undefined) {
+    return "anonymous"
+  }
+  const userObject = await User.query().findById(userId)
+  return userObject.email
+}
+
+wss.on('connection', (ws, req) => {
+  const sessionKey = parseSessionKey(req.headers.cookie)
+  sessionToUserEmail(sessionKey).then( (userEmail) => {
+    ws.userEmail = userEmail
+  }).then(() => {
+    const users = []
+    wss.clients.forEach((client) => {
+      users.push(client.userEmail)
+    })
+    const messageUserList = {
+      type: "userList",
+      content: users
+    }
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(messageUserList))
+      }
+    })
+  })
+
+  ws.on('close', () => {
+    const users = []
+    wss.clients.forEach((client) => {
+      users.push(client.userEmail)
+    })
+    const messageUserList = {
+      type: "userList",
+      content: users
+    }
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(messageUserList))
+      }
+    })
+  })
+
   const initialState = {
     playing: channelState.playing,
     muted: channelState.muted,
@@ -67,6 +128,7 @@ wss.on('connection', (ws) => {
     content: initialState
   }
   ws.send(JSON.stringify(messageObject))
+
   ws.on('message', (message) => {
     const receivedData = JSON.parse(message)
     if (shouldForwardMessage(receivedData)) {
