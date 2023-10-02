@@ -89,15 +89,12 @@ wss.on('connection', (ws, req) => {
   }).then(() => {
     const users = []
     wss.clients.forEach((client) => {
-      console.log("inside forEach, userEmail is: ", client.userEmail)
       users.push(client.userEmail)
-      console.log("users array should have a user now: ", users)
     })
     const messageUserList = {
       type: "userList",
       content: users
     }
-    console.log("messageUserList is: ", messageUserList)
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(messageUserList))
@@ -108,15 +105,12 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     const users = []
     wss.clients.forEach((client) => {
-      console.log("inside forEach, userEmail is: ", client.userEmail)
       users.push(client.userEmail)
-      console.log("users array should have a user now: ", users)
     })
     const messageUserList = {
       type: "userList",
       content: users
     }
-    console.log("messageUserList is: ", messageUserList)
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(messageUserList))

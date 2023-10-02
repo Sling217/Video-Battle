@@ -28,7 +28,6 @@ const Home = (props) => {
             setMuted(receivedData.content.muted)
             setNetworkSeekTime(parseFloat(receivedData.content.networkSeekTime))
         } else if (receivedData.type === "userList") {
-            console.log("received userList", receivedData.content)
             setUserList(receivedData.content)
         }
     }
