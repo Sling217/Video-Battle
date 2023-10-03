@@ -133,8 +133,10 @@ wss.on('connection', (ws, req) => {
   }
   ws.send(JSON.stringify(messageObject))
 
-  ws.on('message', (message) => {
+  ws.on('message', (blob) => {
+    const message = blob.toString('utf8')
     const receivedData = JSON.parse(message)
+    console.log("receivedData: ", message)
     if (shouldForwardMessage(receivedData)) {
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -172,7 +174,7 @@ app.use(rootRouter);
 // app.listen(configuration.web.port, configuration.web.host, () => {
 //   console.log("Server is listening...");
 // });
-const port = process.env.PORT || 8080
+const port = configuration.web.port
 server.listen(configuration.web.port, configuration.web.host, () => {
   console.log(`Server is listening on port ${port}`);
 });
