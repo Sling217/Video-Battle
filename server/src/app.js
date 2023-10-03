@@ -145,11 +145,10 @@ wss.on('connection', (ws, req) => {
   })
 })
 
-const port = process.env.PORT || 8080
-server.listen(port, () => {
-  console.log(`Server started on port ${port}`)
-})
-
+// server.listen(port, () => {
+  //   console.log(`Server started on port ${port}`)
+// })
+  
 app.set("views", path.join(__dirname, "../views"));
 app.engine(
   "hbs",
@@ -170,7 +169,11 @@ app.use(
 app.use(bodyParser.json());
 addMiddlewares(app);
 app.use(rootRouter);
-app.listen(configuration.web.port, configuration.web.host, () => {
-  console.log("Server is listening...");
+// app.listen(configuration.web.port, configuration.web.host, () => {
+//   console.log("Server is listening...");
+// });
+const port = process.env.PORT || 8080
+server.listen(configuration.web.port, configuration.web.host, () => {
+  console.log(`Server is listening on port ${port}`);
 });
 export default { app, wss, videoLinkProcessed };
