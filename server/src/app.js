@@ -14,8 +14,12 @@ import hbsMiddleware from "express-handlebars";
 import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
+import { createServer } from "http";
 
-const wss = new WebSocketServer({ port: 8080 })
+const server = createServer(app)
+
+// const wss = new WebSocketServer({ port: 8080 })
+const wss = new WebSocketServer({ server })
 
 const channelState = {
   playing: true,
@@ -139,6 +143,11 @@ wss.on('connection', (ws, req) => {
       })
     }
   })
+})
+
+const port = process.env.PORT || 8080
+server.listen(port, () => {
+  console.log(`Server started on port ${port}`)
 })
 
 app.set("views", path.join(__dirname, "../views"));
