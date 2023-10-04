@@ -18,7 +18,6 @@ import { createServer } from "http";
 
 const server = createServer(app)
 
-// const wss = new WebSocketServer({ port: 8080 })
 const wss = new WebSocketServer({ server })
 
 const channelState = {
@@ -106,6 +105,12 @@ wss.on('connection', (ws, req) => {
     })
   })
 
+  const interval = setInterval( () => {
+    wss.clients.forEach((client) => {
+      client.ping()
+    })
+  })
+
   ws.on('close', () => {
     const users = []
     wss.clients.forEach((client) => {
@@ -133,16 +138,10 @@ wss.on('connection', (ws, req) => {
   }
   ws.send(JSON.stringify(messageObject))
 
-  const interval = setInterval( () => {
-    wss.clients.forEach((client) => {
-      client.ping()
-    })
-  })
 
   ws.on('message', (blob) => {
     const message = blob.toString('utf8')
     const receivedData = JSON.parse(message)
-    console.log("receivedData: ", message)
     if (shouldForwardMessage(receivedData)) {
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -153,10 +152,6 @@ wss.on('connection', (ws, req) => {
   })
 })
 
-// server.listen(port, () => {
-  //   console.log(`Server started on port ${port}`)
-// })
-  
 app.set("views", path.join(__dirname, "../views"));
 app.engine(
   "hbs",
@@ -177,9 +172,6 @@ app.use(
 app.use(bodyParser.json());
 addMiddlewares(app);
 app.use(rootRouter);
-// app.listen(configuration.web.port, configuration.web.host, () => {
-//   console.log("Server is listening...");
-// });
 const port = configuration.web.port
 server.listen(configuration.web.port, configuration.web.host, () => {
   console.log(`Server is listening on port ${port}`);
