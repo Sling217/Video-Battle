@@ -15,7 +15,6 @@ import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
 import { createServer } from "http";
-import { client } from "../knexfile.cjs";
 
 const server = createServer(app)
 
