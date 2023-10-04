@@ -15,6 +15,7 @@ import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
 import { createServer } from "http";
+import { client } from "../knexfile.cjs";
 
 const server = createServer(app)
 
@@ -132,6 +133,12 @@ wss.on('connection', (ws, req) => {
     content: initialState
   }
   ws.send(JSON.stringify(messageObject))
+
+  const interval = setInterval( () => {
+    wss.clients.forEach((client) => {
+      client.ping()
+    })
+  })
 
   ws.on('message', (blob) => {
     const message = blob.toString('utf8')
