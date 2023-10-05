@@ -2,6 +2,7 @@ import React from 'react'
 import ReactPlayer from 'react-player'
 import { format } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
+import FormError from './layout/FormError'
 
 const VideoEmbed = (props) => {
     const [video, setVideo] = useState({
@@ -12,6 +13,7 @@ const VideoEmbed = (props) => {
     const [videoLink, setVideoLink] = useState("")
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
+    const [errors, setErrors] = useState({})
 
     const playerRef = useRef()
 
@@ -46,7 +48,6 @@ const VideoEmbed = (props) => {
                 const errorMessage = await response.json()
                 throw new Error(errorMessage)
             }
-            setVideoLink("")
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -88,7 +89,18 @@ const VideoEmbed = (props) => {
         
     const handleSubmit = (event) => {
         event.preventDefault()
-        postNewVideoLink()
+        let newErrors = {}
+        if(ReactPlayer.canPlay(videoLink)) {
+            postNewVideoLink().then(() => {
+                setVideoLink("")
+            })
+        } else {
+            newErrors = {
+                ...newErrors,
+                linkValidation: "invalid URL"
+            }
+        }
+        setErrors(newErrors)
     }
 
     const handleSeekMouseDown = (event) => {
@@ -186,6 +198,7 @@ const VideoEmbed = (props) => {
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
                 </form>
+                <FormError error={errors.linkValidation} />
             </div>
             First video link: {initialVideo}
         </div>
