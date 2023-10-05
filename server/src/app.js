@@ -11,11 +11,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 import hbsMiddleware from "express-handlebars";
-import WebSocket from 'ws'
+import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
+import { createServer } from "http";
 
-const wss = new WebSocket.Server({ port: 8080 })
+const server = createServer(app)
+
+const wss = new WebSocketServer({ server })
 
 const channelState = {
   playing: true,
@@ -102,6 +105,12 @@ wss.on('connection', (ws, req) => {
     })
   })
 
+  const interval = setInterval( () => {
+    wss.clients.forEach((client) => {
+      client.ping()
+    })
+  })
+
   ws.on('close', () => {
     const users = []
     wss.clients.forEach((client) => {
@@ -129,7 +138,9 @@ wss.on('connection', (ws, req) => {
   }
   ws.send(JSON.stringify(messageObject))
 
-  ws.on('message', (message) => {
+
+  ws.on('message', (blob) => {
+    const message = blob.toString('utf8')
     const receivedData = JSON.parse(message)
     if (shouldForwardMessage(receivedData)) {
       wss.clients.forEach((client) => {
@@ -161,7 +172,8 @@ app.use(
 app.use(bodyParser.json());
 addMiddlewares(app);
 app.use(rootRouter);
-app.listen(configuration.web.port, configuration.web.host, () => {
-  console.log("Server is listening...");
+const port = configuration.web.port
+server.listen(configuration.web.port, configuration.web.host, () => {
+  console.log(`Server is listening on port ${port}`);
 });
 export default { app, wss, videoLinkProcessed };
