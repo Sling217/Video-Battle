@@ -194,11 +194,11 @@ const VideoEmbed = (props) => {
                             value={videoLink}
                         />
                     </label>
+                    <FormError error={errors.linkValidation} />
                     <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
                 </form>
-                <FormError error={errors.linkValidation} />
             </div>
             First video link: {initialVideo}
         </div>
