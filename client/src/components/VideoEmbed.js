@@ -90,7 +90,8 @@ const VideoEmbed = (props) => {
     const handleSubmit = (event) => {
         event.preventDefault()
         let newErrors = {}
-        if(ReactPlayer.canPlay(videoLink)) {
+        // if(ReactPlayer.canPlay(videoLink)) {
+        if(true) {
             postNewVideoLink().then(() => {
                 setVideoLink("")
             })
