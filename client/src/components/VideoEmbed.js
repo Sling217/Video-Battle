@@ -3,6 +3,8 @@ import ReactPlayer from 'react-player'
 import { format } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
 import FormError from './layout/FormError'
+import translateServerErrors from '../services/translateServerErrors'
+import ErrorList from './layout/ErrorList'
 
 const VideoEmbed = (props) => {
     const [video, setVideo] = useState({
@@ -14,6 +16,7 @@ const VideoEmbed = (props) => {
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
     const [errors, setErrors] = useState({})
+    const [fetchErrors, setFetchErrors] = useState([])
 
     const playerRef = useRef()
 
@@ -45,8 +48,14 @@ const VideoEmbed = (props) => {
                 body: JSON.stringify( {videoLink: videoLink})
             })
             if (!response.ok) {
-                const errorMessage = await response.json()
-                throw new Error(errorMessage)
+                if (response.status === 422) {
+                    const errorBody = await response.json()
+                    const newFetchErrors = translateServerErrors(errorBody.errors)
+                    return setFetchErrors(newFetchErrors)
+                } else {
+                    const errorMessage = await response.json()
+                    throw new Error(errorMessage)
+                }
             }
         } catch(err) {
             console.error("Error in fetch", err.message)
@@ -86,22 +95,24 @@ const VideoEmbed = (props) => {
             event.currentTarget.value
         )
     }
-        
+
     const handleSubmit = (event) => {
         event.preventDefault()
         let newErrors = {}
-        // if(ReactPlayer.canPlay(videoLink)) {
-        if(true) {
+        const reactPlayerCanPlay = ReactPlayer.canPlay(videoLink)
+        const passesRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/.test(videoLink)
+        if(reactPlayerCanPlay && passesRegex) {
             postNewVideoLink().then(() => {
                 setVideoLink("")
             })
         } else {
             newErrors = {
                 ...newErrors,
-                linkValidation: "invalid URL"
+                linkValidation: (reactPlayerCanPlay && !passesRegex) ? "Invalid URL. Must include http/https." : "Invalid URL."
             }
         }
         setErrors(newErrors)
+        setFetchErrors([])
     }
 
     const handleSeekMouseDown = (event) => {
@@ -196,6 +207,7 @@ const VideoEmbed = (props) => {
                         />
                     </label>
                     <FormError error={errors.linkValidation} />
+                    <ErrorList errors={fetchErrors} />
                     <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
