@@ -66,7 +66,35 @@ const VideoEmbed = (props) => {
     useEffect(() => {
         getVideoLink()
     }, [])
-    
+
+    useEffect(() => {
+        if (!props.socket) {
+            return
+        }
+        window.addEventListener("keydown",(event) => {
+            if (event.target.name === "videoLink") {
+                return
+            }
+            console.log("socket", props.socket)
+            switch(event.code) {
+                case "Space":
+                    event.preventDefault()
+                    console.log("props playing", props.playing)
+                    console.log("it worked", event.code)
+                    handlePauseButton()
+                    break
+                case "KeyM" :
+                    console.log("props muted", props.muted)
+                    console.log("Key Press", event.code)
+                    handleMuteButton()
+                    break
+                default:
+                    console.log("Default Case")
+                    break
+            }
+        }) 
+    }, [props.socket])
+
     useEffect(() => {
         if(playerRef.current) {
             playerRef.current.seekTo(props.networkSeekTime, "seconds")
