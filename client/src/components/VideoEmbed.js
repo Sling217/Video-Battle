@@ -19,6 +19,8 @@ const VideoEmbed = (props) => {
     const [fetchErrors, setFetchErrors] = useState([])
 
     const playerRef = useRef()
+    const playingRef = useRef(props.playing)
+    const mutedRef = useRef(props.muted)
 
     const getVideoLink = async () => {
         try {
@@ -68,6 +70,11 @@ const VideoEmbed = (props) => {
     }, [])
 
     useEffect(() => {
+        playingRef.current = props.playing
+        mutedRef.current = props.muted
+    },[props.playing, props.muted])
+
+    useEffect(() => {
         if (!props.socket) {
             return
         }
@@ -75,21 +82,15 @@ const VideoEmbed = (props) => {
             if (event.target.name === "videoLink") {
                 return
             }
-            console.log("socket", props.socket)
             switch(event.code) {
                 case "Space":
                     event.preventDefault()
-                    console.log("props playing", props.playing)
-                    console.log("it worked", event.code)
-                    handlePauseButton()
+                    pauseVideo(playingRef.current)
                     break
                 case "KeyM" :
-                    console.log("props muted", props.muted)
-                    console.log("Key Press", event.code)
-                    handleMuteButton()
+                    muteVideo(mutedRef.current)
                     break
                 default:
-                    console.log("Default Case")
                     break
             }
         }) 
@@ -171,24 +172,32 @@ const VideoEmbed = (props) => {
         }
     }
     
-    const handlePauseButton = () => {
+    const pauseVideo = (playing) => {
         const seekTimeSeconds = playerRef.current.getCurrentTime()
         if (seekTimeSeconds !== null) {
             const messageObject = {
                 type: "playing",
-                content: !props.playing,
+                content: !playing,
                 seekTimeSeconds: seekTimeSeconds
             }
             props.socket.send(JSON.stringify(messageObject))
         }
     }
 
-    const handleMuteButton = () => {
+    const handlePauseButton = () => {
+        pauseVideo(props.playing)
+    }
+
+    const muteVideo = (muted) => {
         const messageObject = {
             type: "muted",
-            content: !props.muted
+            content: !muted
         }
         props.socket.send(JSON.stringify(messageObject))
+    }
+
+    const handleMuteButton = () => {
+        muteVideo(props.muted)
     }
 
     return (
@@ -197,7 +206,7 @@ const VideoEmbed = (props) => {
                 <ReactPlayer
                     ref={playerRef}
                     controls={true}
-                    volume={null}
+                    volume={0.05}
                     loop={true}
                     playing={props.playing}
                     muted={props.muted}
