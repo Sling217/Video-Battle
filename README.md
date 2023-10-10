@@ -4,6 +4,8 @@
 
 Video Battle is an innovative, real-time, video-sharing platform where users can watch and share videos synchronously. The last video submitted by any user plays simultaneously for all visitors to the site, making it a real-time shared video experience.
 
+[Try it out online here!](https://video-battle-7eb93638f816.herokuapp.com)
+
 ## Features
 
 - **Real-Time Video Synchronization:** Every user on the site watches the same video at the same time, regardless of when they join.
