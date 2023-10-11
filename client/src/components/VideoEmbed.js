@@ -90,6 +90,12 @@ const VideoEmbed = (props) => {
                 case "KeyM" :
                     muteVideo(mutedRef.current)
                     break
+                case "ArrowRight" :
+                    seekRight()
+                    break
+                case "ArrowLeft" : 
+                    seekLeft()
+                    break
                 default:
                     break
             }
@@ -179,6 +185,28 @@ const VideoEmbed = (props) => {
                 type: "playing",
                 content: !playing,
                 seekTimeSeconds: seekTimeSeconds
+            }
+            props.socket.send(JSON.stringify(messageObject))
+        }
+    }
+
+    const seekRight = () => {
+        const seekTimeSeconds = playerRef.current.getCurrentTime() 
+        if (seekTimeSeconds !== null) {
+            const messageObject = {
+                type: "seekTime",
+                content: seekTimeSeconds + 5
+            }
+            props.socket.send(JSON.stringify(messageObject))
+        }
+    }
+
+    const seekLeft = () => {
+        const seekTimeSeconds = playerRef.current.getCurrentTime() 
+        if (seekTimeSeconds !== null) {
+            const messageObject = {
+                type: "seekTime",
+                content: seekTimeSeconds - 5
             }
             props.socket.send(JSON.stringify(messageObject))
         }
