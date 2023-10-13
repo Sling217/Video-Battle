@@ -11,6 +11,8 @@ const Home = (props) => {
     const [playing, setPlaying] = useState(true)
     const [muted, setMuted] = useState(true)
     const [userList, setUserList] = useState([])
+    const [videoQueue, setVideoQueue] = useState([])
+    const [queueMode, setQueueMode] = useState(false)
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
@@ -29,12 +31,14 @@ const Home = (props) => {
             setNetworkSeekTime(parseFloat(receivedData.content.networkSeekTime))
         } else if (receivedData.type === "userList") {
             setUserList(receivedData.content)
+        } else if (receivedData.type === "videoQueue") {
+            setVideoQueue(receivedData.content)
         }
     }
 
     useEffect(() => {
-        const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
-        // const socket = new WebSocket('ws://localhost:3000')
+        // const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
+        const socket = new WebSocket('ws://localhost:3000')
         socket.addEventListener('message', readNewMessage)
         setSocket(socket)
         return(() => {
@@ -42,10 +46,13 @@ const Home = (props) => {
         })
     },[])
     
+    const currentlyPlaying = queueMode ? videoQueue[0] : videoLinks[videoLinks.length - 1]
+
     return (
         <div>
             <VideoEmbed
                 videoLinks={videoLinks}
+                currentlyPlaying = {currentlyPlaying}
                 networkSeekTime={networkSeekTime}
                 socket={socket}
                 playing={playing}

@@ -24,7 +24,8 @@ const channelState = {
   playing: true,
   muted: true,
   seekTimeSeconds: 0,
-  timeSeekReceived: new Date()
+  timeSeekReceived: new Date(),
+  queueMode: true,
 }
 
 const videoLinkProcessed = new EventEmitter()

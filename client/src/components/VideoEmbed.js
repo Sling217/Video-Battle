@@ -111,11 +111,12 @@ const VideoEmbed = (props) => {
     useEffect(() => {
         setVideo({
             updatedAt: new Date(), 
-            fullUrl: props.videoLinks[props.videoLinks.length - 1]
+            // fullUrl: props.videoLinks[props.videoLinks.length - 1]
+            fullUrl: props.currentlyPlaying
         })
         setPlayed(0)
         playerRef.current.seekTo(0)
-    }, [props.videoLinks])
+    }, [props.currentlyPlaying])
     
     const setStart = () => {
         playerRef.current.seekTo(props.networkSeekTime)
