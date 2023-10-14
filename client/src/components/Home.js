@@ -57,6 +57,7 @@ const Home = (props) => {
                 socket={socket}
                 playing={playing}
                 muted={muted}
+                queueMode={queueMode}
             />
             <VideoLinksBox videoLinks={videoLinks} />
             <UserList userList={userList} />

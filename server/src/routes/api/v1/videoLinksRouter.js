@@ -1,5 +1,5 @@
 import express from "express"
-import { VideoLink } from "../../../models/index.js"
+import { VideoLink, MainChannelQueue } from "../../../models/index.js"
 import { ValidationError } from "objection"
 import cleanUserInput from "../../../services/cleanUserInput.js"
 import app from "../../../app.js"
@@ -19,9 +19,10 @@ videoLinksRouter.get("/", async (req, res) => {
 videoLinksRouter.post("/", async (req, res) => {
     try {
         const { body } = req
-        const cleanedInput = cleanUserInput(body.videoLink)
+        console.log(body)
+        const cleanedInput = cleanUserInput(body)
         const newVideoLinkObject = {
-            fullUrl: cleanedInput,
+            fullUrl: cleanedInput.videoLink,
         }
         if (req.user) {
             newVideoLinkObject.userId = req.user.id
@@ -30,16 +31,27 @@ videoLinksRouter.post("/", async (req, res) => {
         }
         const videoLink = await VideoLink.query().insertAndFetch(newVideoLinkObject)
         const wss = app.wss
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                const messageObject = {
-                    type: "videoLink",
-                    content: videoLink.fullUrl
+        if (cleanedInput.queueMode === false) {
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    const messageObject = {
+                        type: "videoLink",
+                        content: videoLink.fullUrl
+                    }
+                    client.send(JSON.stringify(messageObject))
                 }
-                client.send(JSON.stringify(messageObject))
-            }
-        })
-        app.videoLinkProcessed.emit('videoLinkPostTime', new Date())
+            })
+        } else {
+            await MainChannelQueue.query().insert(newVideoLinkObject)
+            const videoLinkQueue =  await MainChannelQueue.query().orderBy("updatedAt")
+            console.log("what does videolInkQueue looks like", videoLinkQueue)
+        }
+        
+        const emitterObject = {
+            timeSeekReceived: new Date(),
+            queueMode: cleanedInput.queueMode
+        }
+        app.videoLinkProcessed.emit('videoLinkPostData', emitterObject)
         
         res.set({"Content-Type": "application/json"}).status(201).json({ videoLink: videoLink })
     } catch(err) {

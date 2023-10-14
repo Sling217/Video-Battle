@@ -35,7 +35,7 @@ class User extends uniqueFunc(Model) {
   }
 
   static get relationMappings() {
-    const { VideoLink } = require("./index.js")
+    const { VideoLink, MainChannelQueue } = require("./index.js")
     return {
       videoLinks: {
         relation: Model.HasManyRelation,
@@ -43,6 +43,14 @@ class User extends uniqueFunc(Model) {
         join: {
           from: "users.id",
           to: "videoLinks.userId"
+        }
+      },
+      videoQueue: {
+        relation: Model.HasManyRelation,
+        modelClass: MainChannelQueue,
+        join: {
+          from: "users.id",
+          to: "mainChannelQueue.userId"
         }
       }
     }

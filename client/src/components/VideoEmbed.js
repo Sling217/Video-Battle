@@ -17,6 +17,7 @@ const VideoEmbed = (props) => {
     const [seeking, setSeeking] = useState(false)
     const [errors, setErrors] = useState({})
     const [fetchErrors, setFetchErrors] = useState([])
+    const [changeToQueueMode, setChangeToQueueMode] = useState(props.queueMode)
 
     const playerRef = useRef()
     const playingRef = useRef(props.playing)
@@ -42,12 +43,16 @@ const VideoEmbed = (props) => {
 
     const postNewVideoLink = async () => {
         try {
+            const videoSubmissionBody = {
+                videoLink: videoLink,
+                changeToQueueMode: changeToQueueMode 
+            }
             const response = await fetch("api/v1/videoLinks", {
                 method: "POST",
                 headers: new Headers({
                     "Content-Type": "application/json"
                 }),
-                body: JSON.stringify( {videoLink: videoLink})
+                body: JSON.stringify(videoSubmissionBody)
             })
             if (!response.ok) {
                 if (response.status === 422) {
@@ -229,6 +234,10 @@ const VideoEmbed = (props) => {
         muteVideo(props.muted)
     }
 
+    const handleQueueMode = () => {
+        setChangeToQueueMode(!changeToQueueMode)
+    }
+
     return (
         <div>
             <div className="player-container">
@@ -277,6 +286,8 @@ const VideoEmbed = (props) => {
                     <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
+                    Queue Mode
+                    <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
                 </form>
             </div>
             First video link: {initialVideo}

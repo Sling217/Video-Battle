@@ -29,9 +29,10 @@ const channelState = {
 }
 
 const videoLinkProcessed = new EventEmitter()
-videoLinkProcessed.on('videoLinkPostTime', (data) => {
-  channelState.timeSeekReceived = data
+videoLinkProcessed.on('videoLinkPostData', (data) => {
+  channelState.timeSeekReceived = data.timeSeekReceived
   channelState.seekTimeSeconds = 0
+  channelState.queueMode = data.queueMode
 })
 
 const getSeekTimeInSeconds = (channelState) => {
@@ -131,7 +132,8 @@ wss.on('connection', (ws, req) => {
   const initialState = {
     playing: channelState.playing,
     muted: channelState.muted,
-    networkSeekTime: getSeekTimeInSeconds(channelState)
+    networkSeekTime: getSeekTimeInSeconds(channelState),
+    queueMode: channelState.queueMode
   }
   const messageObject = {
     type: "initial",
