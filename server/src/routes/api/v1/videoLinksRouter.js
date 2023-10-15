@@ -2,12 +2,14 @@ import express from "express"
 import { VideoLink, MainChannelQueue } from "../../../models/index.js"
 import { ValidationError } from "objection"
 import cleanUserInput from "../../../services/cleanUserInput.js"
+import serializeVideoQueue from "../../../services/serializeVideoQueue.js"
 import app from "../../../app.js"
 import WebSocket from 'ws'
 
 const videoLinksRouter = new express.Router()
 
 videoLinksRouter.get("/", async (req, res) => {
+    // TODO: send video queue when appropriate
     try {
         const videoFullUrl = await VideoLink.query().orderBy("updatedAt", 'desc').limit(1).first()
         res.status(200).json({ videoLink: videoFullUrl })
@@ -19,7 +21,6 @@ videoLinksRouter.get("/", async (req, res) => {
 videoLinksRouter.post("/", async (req, res) => {
     try {
         const { body } = req
-        console.log(body)
         const cleanedInput = cleanUserInput(body)
         const newVideoLinkObject = {
             fullUrl: cleanedInput.videoLink,
@@ -31,7 +32,7 @@ videoLinksRouter.post("/", async (req, res) => {
         }
         const videoLink = await VideoLink.query().insertAndFetch(newVideoLinkObject)
         const wss = app.wss
-        if (cleanedInput.queueMode === false) {
+        if (cleanedInput.changeToQueueMode === false) {
             wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
                     const messageObject = {
@@ -43,8 +44,17 @@ videoLinksRouter.post("/", async (req, res) => {
             })
         } else {
             await MainChannelQueue.query().insert(newVideoLinkObject)
-            const videoLinkQueue =  await MainChannelQueue.query().orderBy("updatedAt")
-            console.log("what does videolInkQueue looks like", videoLinkQueue)
+            const videoObjectArray =  await MainChannelQueue.query().orderBy("updatedAt")
+            const videoQueue = serializeVideoQueue(videoObjectArray)
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    const messageObject = {
+                        type: "videoQueue",
+                        content: videoQueue
+                    }
+                    client.send(JSON.stringify(messageObject))
+                }
+            })
         }
         
         const emitterObject = {

@@ -17,6 +17,7 @@ const Home = (props) => {
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
         if (receivedData.type === "videoLink") {
+            setQueueMode(false)
             setVideoLinks((videoLinks) => [ ...videoLinks, `${receivedData.content}` ])
             setNetworkSeekTime(0)
         } else if (receivedData.type === "seekTime") {
@@ -32,8 +33,10 @@ const Home = (props) => {
         } else if (receivedData.type === "userList") {
             setUserList(receivedData.content)
         } else if (receivedData.type === "videoQueue") {
+            setQueueMode(true)
             setVideoQueue(receivedData.content)
         }
+        //TODO receive play next video in queue cmd
     }
 
     useEffect(() => {
@@ -59,7 +62,11 @@ const Home = (props) => {
                 muted={muted}
                 queueMode={queueMode}
             />
-            <VideoLinksBox videoLinks={videoLinks} />
+            <VideoLinksBox
+                videoLinks={videoLinks}
+                videoQueue={videoQueue}
+                queueMode={queueMode}
+            />
             <UserList userList={userList} />
         </div>
     )

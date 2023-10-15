@@ -20,6 +20,8 @@ const server = createServer(app)
 
 const wss = new WebSocketServer({ server })
 
+//TODO: keep track of video queue time/video finishing, send play next cmd
+
 const channelState = {
   playing: true,
   muted: true,

@@ -24,6 +24,7 @@ const VideoEmbed = (props) => {
     const mutedRef = useRef(props.muted)
 
     const getVideoLink = async () => {
+        // TODO: get video queue when appropriate
         try {
             const response = await fetch("/api/v1/videoLinks")
             const responseBody = await response.json()
@@ -45,7 +46,7 @@ const VideoEmbed = (props) => {
         try {
             const videoSubmissionBody = {
                 videoLink: videoLink,
-                changeToQueueMode: changeToQueueMode 
+                changeToQueueMode: changeToQueueMode
             }
             const response = await fetch("api/v1/videoLinks", {
                 method: "POST",

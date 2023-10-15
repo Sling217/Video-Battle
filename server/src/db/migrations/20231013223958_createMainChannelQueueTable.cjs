@@ -10,10 +10,20 @@ exports.up = async (knex) => {
     return knex.schema.createTable("mainChannelQueue", (table) => {
         table.bigIncrements("id")
         table.text("fullUrl").notNullable()
-        table.bigInteger("userId").notNullable().unsigned().index().references("users.id")
+        table.bigInteger("userId").unsigned().index().references("users.id")
+        table.boolean("anonymousSubmission").defaultTo(false)
         table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now())
         table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now())
     })
+    .raw(`
+        ALTER TABLE "mainChannelQueue"
+        ADD CONSTRAINT "userId_xor_anonymousSubmission"
+        CHECK (
+            ("userId" IS NOT NULL AND "anonymousSubmission" = false)
+            OR
+            ("userId" IS NULL AND "anonymousSubmission" = true)
+        )
+    `)
 }
 
 /**
