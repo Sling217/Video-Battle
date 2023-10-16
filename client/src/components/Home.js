@@ -11,15 +11,23 @@ const Home = (props) => {
     const [playing, setPlaying] = useState(true)
     const [muted, setMuted] = useState(true)
     const [userList, setUserList] = useState([])
-    const [videoQueue, setVideoQueue] = useState([])
+    const [videoQueue, setVideoQueue] = useState([{
+        fullUrl: "",
+        updatedAt: new Date()
+    }])
     const [queueMode, setQueueMode] = useState(false)
+    const [videoLink, setVideoLink] = useState({
+        fullUrl: "",
+        updatedAt: new Date()
+    })
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
         if (receivedData.type === "videoLink") {
             setQueueMode(false)
-            setVideoLinks((videoLinks) => [ ...videoLinks, `${receivedData.content}` ])
+            setVideoLinks((videoLinks) => [ ...videoLinks, `${receivedData.content.fullUrl}` ])
             setNetworkSeekTime(0)
+            setVideoLink(receivedData.content)
         } else if (receivedData.type === "seekTime") {
             setNetworkSeekTime(receivedData.content)
         } else if (receivedData.type === "playing") {
@@ -49,7 +57,7 @@ const Home = (props) => {
         })
     },[])
     
-    const currentlyPlaying = queueMode ? videoQueue[0] : videoLinks[videoLinks.length - 1]
+    const currentlyPlaying = queueMode ? videoQueue[0] : videoLink
 
     return (
         <div>
@@ -61,6 +69,8 @@ const Home = (props) => {
                 playing={playing}
                 muted={muted}
                 queueMode={queueMode}
+                setVideoQueue={setVideoQueue}
+                setVideoLink={setVideoLink}
             />
             <VideoLinksBox
                 videoLinks={videoLinks}

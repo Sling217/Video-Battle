@@ -1,6 +1,9 @@
 const serializeVideoQueue = (videoObjectArray) => {
     const videoQueue = videoObjectArray.map(videoObject => {
-        return videoObject.fullUrl
+        return ({
+            fullUrl: videoObject.fullUrl,
+            updatedAt: videoObject.updatedAt
+        })
     })
     return videoQueue
 }

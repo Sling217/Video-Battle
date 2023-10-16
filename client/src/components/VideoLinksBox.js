@@ -3,7 +3,10 @@ import React from 'react'
 const VideoLinksBox = (props) => {
     let boxText
     if (props.queueMode) {
-        boxText = props.videoQueue.join('\n')
+        const arrayOfStrings = props.videoQueue.map((videoObject) => {
+            return videoObject.fullUrl
+        })
+        boxText = arrayOfStrings.join('\n')
     } else {
         boxText = props.videoLinks.join('\n')
     }

@@ -7,10 +7,6 @@ import translateServerErrors from '../services/translateServerErrors'
 import ErrorList from './layout/ErrorList'
 
 const VideoEmbed = (props) => {
-    const [video, setVideo] = useState({
-        fullUrl: "",
-        updatedAt: new Date()
-    })
     const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
     const [played, setPlayed] = useState(0)
@@ -24,7 +20,6 @@ const VideoEmbed = (props) => {
     const mutedRef = useRef(props.muted)
 
     const getVideoLink = async () => {
-        // TODO: get video queue when appropriate
         try {
             const response = await fetch("/api/v1/videoLinks")
             const responseBody = await response.json()
@@ -35,7 +30,8 @@ const VideoEmbed = (props) => {
                 fullUrl: responseBody.videoLink.fullUrl,
                 updatedAt: new Date(responseBody.videoLink.updatedAt)
             }
-            setVideo(videoObject)
+            props.setVideoLink(videoObject)
+            props.setVideoQueue(responseBody.videoQueue)
             setInitialVideo(responseBody.videoLink.fullUrl)
         } catch(err) {
             console.error("Error in fetch", err.message)
@@ -69,7 +65,8 @@ const VideoEmbed = (props) => {
             console.error("Error in fetch", err.message)
         }
     }
-    const formattedTime = format(video.updatedAt, 'MMMM dd, yyyy HH:mm')
+    const timeObject = new Date(props.currentlyPlaying.updatedAt) 
+    const formattedTime = format(timeObject, 'MMMM dd, yyyy HH:mm')
 
     useEffect(() => {
         getVideoLink()
@@ -115,13 +112,8 @@ const VideoEmbed = (props) => {
     }, [props.networkSeekTime])
     
     useEffect(() => {
-        setVideo({
-            updatedAt: new Date(), 
-            // fullUrl: props.videoLinks[props.videoLinks.length - 1]
-            fullUrl: props.currentlyPlaying
-        })
         setPlayed(0)
-        playerRef.current.seekTo(0)
+        // playerRef.current.seekTo(0)
     }, [props.currentlyPlaying])
     
     const setStart = () => {
@@ -249,7 +241,7 @@ const VideoEmbed = (props) => {
                     loop={true}
                     playing={props.playing}
                     muted={props.muted}
-                    url={video.fullUrl}
+                    url={props.currentlyPlaying.fullUrl}
                     onProgress={handleProgress}
                     onReady={setStart}
                 />
