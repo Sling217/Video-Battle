@@ -3,6 +3,7 @@ import { VideoLink, MainChannelQueue } from "../../../models/index.js"
 import { ValidationError } from "objection"
 import cleanUserInput from "../../../services/cleanUserInput.js"
 import serializeVideoQueue from "../../../services/serializeVideoQueue.js"
+import getDuration from "../../../services/getVideoDuration.js"
 import app from "../../../app.js"
 import WebSocket from 'ws'
 
@@ -50,6 +51,15 @@ videoLinksRouter.post("/", async (req, res) => {
                 }
             })
         } else {
+            const videoDuration = await getDuration(cleanedInput.videoLink)
+            if (videoDuration === NaN) {
+                newVideoLinkObject.duration = 100 * 60 * 60
+            } else if (videoDuration instanceof Error) {
+                return res.status(500)
+            } else {
+                newVideoLinkObject.duration = videoDuration
+            }
+            
             await MainChannelQueue.query().insert(newVideoLinkObject)
             const videoObjectArray =  await MainChannelQueue.query().orderBy("updatedAt")
             const videoQueue = serializeVideoQueue(videoObjectArray)

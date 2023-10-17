@@ -12,6 +12,7 @@ exports.up = async (knex) => {
         table.text("fullUrl").notNullable()
         table.bigInteger("userId").unsigned().index().references("users.id")
         table.boolean("anonymousSubmission").defaultTo(false)
+        table.integer("duration")
         table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now())
         table.timestamp("updatedAt").notNullable().defaultTo(knex.fn.now())
     })
