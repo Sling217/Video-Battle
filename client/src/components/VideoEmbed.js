@@ -113,7 +113,7 @@ const VideoEmbed = (props) => {
     
     useEffect(() => {
         setPlayed(0)
-        // playerRef.current.seekTo(0)
+        playerRef.current.seekTo(0)
     }, [props.currentlyPlaying])
     
     const setStart = () => {
@@ -230,6 +230,13 @@ const VideoEmbed = (props) => {
     const handleQueueMode = () => {
         setChangeToQueueMode(!changeToQueueMode)
     }
+    
+    const handleSkipButton = () => {
+        const messageObject = {
+            type: "skip"
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
 
     return (
         <div>
@@ -279,6 +286,7 @@ const VideoEmbed = (props) => {
                     <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
+                    <input type="button" value="Skip" onClick={handleSkipButton} />
                     Queue Mode
                     <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
                 </form>

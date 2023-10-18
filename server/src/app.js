@@ -15,7 +15,8 @@ import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
 import { createServer } from "http";
-
+import MainChannelQueue from "./models/MainChannelQueue.js";
+import serializeVideoQueue from "./services/serializeVideoQueue.js";
 const server = createServer(app)
 
 const wss = new WebSocketServer({ server })
@@ -45,6 +46,22 @@ const getSeekTimeInSeconds = (channelState) => {
   return channelState.seekTimeSeconds + timeElapsed 
 }
 
+const advanceQueue = async () => {
+  const wholeQueue = await MainChannelQueue.query()
+  if (wholeQueue.length > 1) {
+    await MainChannelQueue.query().delete().where("id", wholeQueue[0].id)
+    const messageObject = {
+      type:"videoQueue", 
+      content: serializeVideoQueue(wholeQueue.slice(1))
+    }
+    wss.clients.forEach((client)=> {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(messageObject))
+      }
+    })
+  }
+}
+
 const shouldForwardMessage = (message) => {
   if (message.type === "seekTime") {
     channelState.seekTimeSeconds = message.content
@@ -58,6 +75,9 @@ const shouldForwardMessage = (message) => {
   } else if (message.type === "muted") {
     channelState[message.type] = message.content
     return(true)
+  } else if (message.type === "skip") {
+    advanceQueue()
+    return(false)
   }
   else {
     return(false)
