@@ -31,7 +31,9 @@ const VideoEmbed = (props) => {
                 updatedAt: new Date(responseBody.videoLink.updatedAt)
             }
             props.setVideoLink(videoObject)
-            props.setVideoQueue(responseBody.videoQueue)
+            if (responseBody.videoQueue.length > 0) {
+                props.setVideoQueue(responseBody.videoQueue)
+            }
             setInitialVideo(responseBody.videoLink.fullUrl)
         } catch(err) {
             console.error("Error in fetch", err.message)

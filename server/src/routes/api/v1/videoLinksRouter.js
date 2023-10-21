@@ -73,10 +73,9 @@ videoLinksRouter.post("/", async (req, res) => {
                 }
             })
         }
-        
         const emitterObject = {
             timeSeekReceived: new Date(),
-            queueMode: cleanedInput.queueMode
+            queueMode: cleanedInput.changeToQueueMode
         }
         app.videoLinkProcessed.emit('videoLinkPostData', emitterObject)
         

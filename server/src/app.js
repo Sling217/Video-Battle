@@ -24,7 +24,9 @@ const wss = new WebSocketServer({ server })
 //TODO: keep track of video queue time/video finishing, send play next cmd
 
 MainChannelQueue.query().first().then((result) => {
-  channelState.videoDuration = result.duration
+  if (result) {
+    channelState.videoDuration = result.duration
+  }
 })
 
 const channelState = {
@@ -78,11 +80,18 @@ const updateVideoTimeout = (playing) => {
     clearTimeout(channelState.videoTimeoutId) // double check this is correct
   }
   if (playing) {
+    console.log("the duration of said video", channelState.videoDuration)
+    console.log("the seektimes seconds of said video", channelState.seekTimeSeconds)
     const timeoutSeconds = channelState.videoDuration - channelState.seekTimeSeconds
     console.log("timing out in: ", timeoutSeconds, "seconds")
-    const id = setTimeout(() => {
+    const id = setTimeout( async () => {
       console.log("timing out")
-      advanceQueue()
+      const duration = await advanceQueue()
+      if (duration !== null) {
+        channelState.videoDuration = duration
+        channelState.seekTimeSeconds = 0
+        channelState.timeSeekReceived = new Date()
+      }
     }, timeoutSeconds)
     channelState.videoTimeoutId = id
   }
@@ -100,6 +109,7 @@ const shouldForwardMessage = async (message) => {
     channelState[message.type] = message.content
     channelState.seekTimeSeconds = message.seekTimeSeconds
     channelState.timeSeekReceived = new Date()
+    console.log("what is queue mode", channelState.queueMode)
     if (channelState.queueMode) {
       updateVideoTimeout(channelState.playing)
     }
