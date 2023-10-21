@@ -23,12 +23,18 @@ const wss = new WebSocketServer({ server })
 
 //TODO: keep track of video queue time/video finishing, send play next cmd
 
+MainChannelQueue.query().first().then((result) => {
+  channelState.videoDuration = result.duration
+})
+
 const channelState = {
   playing: true,
   muted: true,
   seekTimeSeconds: 0,
   timeSeekReceived: new Date(),
   queueMode: true,
+  videoDuration: 0,
+  videoTimeoutId: null
 }
 
 const videoLinkProcessed = new EventEmitter()
@@ -50,33 +56,67 @@ const advanceQueue = async () => {
   const wholeQueue = await MainChannelQueue.query()
   if (wholeQueue.length > 1) {
     await MainChannelQueue.query().delete().where("id", wholeQueue[0].id)
+    const newQueue = serializeVideoQueue(wholeQueue.slice(1))
     const messageObject = {
-      type:"videoQueue", 
-      content: serializeVideoQueue(wholeQueue.slice(1))
+      type: "videoQueue", 
+      content: newQueue
     }
     wss.clients.forEach((client)=> {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(messageObject))
       }
     })
+    // need to set a new timeout, but just calling updateVideoTimeout again leads to recursion
+    return newQueue[0].duration
+  }
+  return null
+}
+
+const updateVideoTimeout = (playing) => {
+  if (channelState.videoTimeoutId !== null) {
+    console.log("clearing old timeout")
+    clearTimeout(channelState.videoTimeoutId) // double check this is correct
+  }
+  if (playing) {
+    const timeoutSeconds = channelState.videoDuration - channelState.seekTimeSeconds
+    console.log("timing out in: ", timeoutSeconds, "seconds")
+    const id = setTimeout(() => {
+      console.log("timing out")
+      advanceQueue()
+    }, timeoutSeconds)
+    channelState.videoTimeoutId = id
   }
 }
 
-const shouldForwardMessage = (message) => {
+const shouldForwardMessage = async (message) => {
   if (message.type === "seekTime") {
     channelState.seekTimeSeconds = message.content
     channelState.timeSeekReceived = new Date()
+    if (channelState.queueMode) {
+      updateVideoTimeout(channelState.playing)
+    }
     return(true)
   } else if (message.type === "playing") {
     channelState[message.type] = message.content
     channelState.seekTimeSeconds = message.seekTimeSeconds
     channelState.timeSeekReceived = new Date()
+    if (channelState.queueMode) {
+      updateVideoTimeout(channelState.playing)
+    }
     return(true)
   } else if (message.type === "muted") {
     channelState[message.type] = message.content
     return(true)
   } else if (message.type === "skip") {
-    advanceQueue()
+    if (channelState.queueMode) {
+    const duration = await advanceQueue()
+    if (duration !== null) {
+      channelState.videoDuration = duration
+      channelState.seekTimeSeconds = 0
+      channelState.timeSeekReceived = new Date()
+    }
+      updateVideoTimeout(channelState.playing)
+    }
     return(false)
   }
   else {

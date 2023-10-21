@@ -1,25 +1,30 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react' // remove useRef?
 import VideoEmbed from './VideoEmbed'
 import VideoLinksBox from './VideoLinksBox'
 import UserList from './UserList'
 
 const Home = (props) => {
     const [videoLinks, setVideoLinks] = useState([])
+    const [videoLink, setVideoLink] = useState({
+        fullUrl: "",
+        updatedAt: new Date()
+    })
+    const [queueMode, setQueueMode] = useState(true)
+    const [videoQueue, setVideoQueue] = useState([{
+        fullUrl: "",
+        updatedAt: new Date()
+    }])
+    const [videoQueueFirstVideo, setVideoQueueFirstVideo] = useState({
+        fullUrl: "",
+        updatedAt: new Date()
+    })
+    const videoQueueFirstVideoRef = useRef(videoQueueFirstVideo) // do not need anymore?
     const [networkSeekTime, setNetworkSeekTime] = useState(0)
     const [socket, setSocket] = useState(null)
     const [playing, setPlaying] = useState(true)
     const [muted, setMuted] = useState(true)
     const [userList, setUserList] = useState([])
-    const [videoQueue, setVideoQueue] = useState([{
-        fullUrl: "",
-        updatedAt: new Date()
-    }])
-    const [queueMode, setQueueMode] = useState(false)
-    const [videoLink, setVideoLink] = useState({
-        fullUrl: "",
-        updatedAt: new Date()
-    })
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
@@ -44,7 +49,6 @@ const Home = (props) => {
             setQueueMode(true)
             setVideoQueue(receivedData.content)
         }
-        //TODO receive play next video in queue cmd
     }
 
     useEffect(() => {
@@ -56,8 +60,21 @@ const Home = (props) => {
             socket.close()
         })
     },[])
+
+    useEffect(() => {
+        videoQueueFirstVideoRef.current = videoQueueFirstVideo
+    },[videoQueueFirstVideo]) //do not need anymore?
+
+    useEffect(() => {
+        if (
+            videoQueueFirstVideo.fullUrl !== videoQueue[0].fullUrl ||
+            videoQueueFirstVideo.updatedAt !== videoQueue[0].updatedAt
+            ) {
+                setVideoQueueFirstVideo(videoQueue[0])
+        }
+    }, [videoQueue])
     
-    const currentlyPlaying = queueMode ? videoQueue[0] : videoLink
+    const currentlyPlaying = queueMode ? videoQueueFirstVideo : videoLink
 
     return (
         <div>
