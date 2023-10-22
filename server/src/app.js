@@ -21,8 +21,6 @@ const server = createServer(app)
 
 const wss = new WebSocketServer({ server })
 
-//TODO: keep track of video queue time/video finishing, send play next cmd
-
 MainChannelQueue.query().first().then((result) => {
   if (result) {
     channelState.videoDuration = result.duration
@@ -43,7 +41,21 @@ const videoLinkProcessed = new EventEmitter()
 videoLinkProcessed.on('videoLinkPostData', (data) => {
   channelState.timeSeekReceived = data.timeSeekReceived
   channelState.seekTimeSeconds = 0
+  if (!channelState.queueMode && data.queueMode) {
+    channelState.queueMode = data.queueMode
+    updateVideoTimeout(channelState.playing)
+  }
   channelState.queueMode = data.queueMode
+  if (!data.queueMode && channelState.videoTimeoutId !== null) {
+    clearTimeout(channelState.videoTimeoutId)
+  }
+  if (channelState.queueMode) {
+    MainChannelQueue.query().first().then((result) => {
+      if (result) {
+        channelState.videoDuration = result.duration
+      }
+    })
+  }
 })
 
 const getSeekTimeInSeconds = (channelState) => {
@@ -68,7 +80,6 @@ const advanceQueue = async () => {
         client.send(JSON.stringify(messageObject))
       }
     })
-    // need to set a new timeout, but just calling updateVideoTimeout again leads to recursion
     return newQueue[0].duration
   }
   return null
@@ -76,25 +87,26 @@ const advanceQueue = async () => {
 
 const updateVideoTimeout = (playing) => {
   if (channelState.videoTimeoutId !== null) {
-    console.log("clearing old timeout")
-    clearTimeout(channelState.videoTimeoutId) // double check this is correct
+    clearTimeout(channelState.videoTimeoutId)
+    channelState.videoTimeoutId = null
   }
-  if (playing) {
-    console.log("the duration of said video", channelState.videoDuration)
-    console.log("the seektimes seconds of said video", channelState.seekTimeSeconds)
+  if (playing && channelState.queueMode) {
     const timeoutSeconds = channelState.videoDuration - channelState.seekTimeSeconds
-    console.log("timing out in: ", timeoutSeconds, "seconds")
     const id = setTimeout( async () => {
-      console.log("timing out")
       const duration = await advanceQueue()
       if (duration !== null) {
         channelState.videoDuration = duration
-        channelState.seekTimeSeconds = 0
-        channelState.timeSeekReceived = new Date()
       }
-    }, timeoutSeconds)
+      channelState.seekTimeSeconds = 0
+      channelState.timeSeekReceived = new Date()
+      updateVideoTimeout(channelState.playing)
+    }, timeoutSeconds*1000)
     channelState.videoTimeoutId = id
   }
+}
+
+if (channelState.queueMode) {
+  updateVideoTimeout(channelState.playing)
 }
 
 const shouldForwardMessage = async (message) => {
@@ -109,7 +121,6 @@ const shouldForwardMessage = async (message) => {
     channelState[message.type] = message.content
     channelState.seekTimeSeconds = message.seekTimeSeconds
     channelState.timeSeekReceived = new Date()
-    console.log("what is queue mode", channelState.queueMode)
     if (channelState.queueMode) {
       updateVideoTimeout(channelState.playing)
     }

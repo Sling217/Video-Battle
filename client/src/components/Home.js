@@ -19,7 +19,6 @@ const Home = (props) => {
         fullUrl: "",
         updatedAt: new Date()
     })
-    const videoQueueFirstVideoRef = useRef(videoQueueFirstVideo) // do not need anymore?
     const [networkSeekTime, setNetworkSeekTime] = useState(0)
     const [socket, setSocket] = useState(null)
     const [playing, setPlaying] = useState(true)
@@ -52,18 +51,14 @@ const Home = (props) => {
     }
 
     useEffect(() => {
-        // const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
-        const socket = new WebSocket('ws://localhost:3000')
+        const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
+        // const socket = new WebSocket('ws://localhost:3000')
         socket.addEventListener('message', readNewMessage)
         setSocket(socket)
         return(() => {
             socket.close()
         })
     },[])
-
-    useEffect(() => {
-        videoQueueFirstVideoRef.current = videoQueueFirstVideo
-    },[videoQueueFirstVideo]) //do not need anymore?
 
     useEffect(() => {
         if (

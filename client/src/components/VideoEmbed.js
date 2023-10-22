@@ -114,8 +114,10 @@ const VideoEmbed = (props) => {
     }, [props.networkSeekTime])
     
     useEffect(() => {
-        setPlayed(0)
-        playerRef.current.seekTo(0)
+        setTimeout(() => {
+            setPlayed(0)
+            playerRef.current.seekTo(0)
+        }, 250) // race condition
     }, [props.currentlyPlaying])
     
     const setStart = () => {
@@ -174,13 +176,20 @@ const VideoEmbed = (props) => {
     }
     
     const handleProgress = (state) => {
-        if (!seeking) {
-            setPlayed(state.played)
+        if (!seeking && props.playing) {
+            let newPlayed = state.played
+            if (newPlayed === 1) {
+                newPlayed = 0 // fix odd behavior of handleProgress
+            }
+            setPlayed(newPlayed)
         }
     }
     
     const pauseVideo = (playing) => {
-        const seekTimeSeconds = playerRef.current.getCurrentTime()
+        let seekTimeSeconds = playerRef.current.getCurrentTime()
+        if (played === 0) {
+            seekTimeSeconds = 0 // fix odd behavior of getCurrentTime
+        }
         if (seekTimeSeconds !== null) {
             const messageObject = {
                 type: "playing",
@@ -240,6 +249,11 @@ const VideoEmbed = (props) => {
         props.socket.send(JSON.stringify(messageObject))
     }
 
+    let skipButton = ""
+    if (props.queueMode) {
+        skipButton = <input type="button" value="Skip" onClick={handleSkipButton} />
+    }
+
     return (
         <div>
             <div className="player-container">
@@ -288,7 +302,7 @@ const VideoEmbed = (props) => {
                     <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
-                    <input type="button" value="Skip" onClick={handleSkipButton} />
+                    {skipButton}
                     Queue Mode
                     <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
                 </form>
