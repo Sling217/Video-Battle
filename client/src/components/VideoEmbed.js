@@ -7,16 +7,13 @@ import translateServerErrors from '../services/translateServerErrors'
 import ErrorList from './layout/ErrorList'
 
 const VideoEmbed = (props) => {
-    const [video, setVideo] = useState({
-        fullUrl: "",
-        updatedAt: new Date()
-    })
     const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
     const [errors, setErrors] = useState({})
     const [fetchErrors, setFetchErrors] = useState([])
+    const [changeToQueueMode, setChangeToQueueMode] = useState(props.queueMode)
 
     const playerRef = useRef()
     const playingRef = useRef(props.playing)
@@ -33,7 +30,10 @@ const VideoEmbed = (props) => {
                 fullUrl: responseBody.videoLink.fullUrl,
                 updatedAt: new Date(responseBody.videoLink.updatedAt)
             }
-            setVideo(videoObject)
+            props.setVideoLink(videoObject)
+            if (responseBody.videoQueue.length > 0) {
+                props.setVideoQueue(responseBody.videoQueue)
+            }
             setInitialVideo(responseBody.videoLink.fullUrl)
         } catch(err) {
             console.error("Error in fetch", err.message)
@@ -42,12 +42,16 @@ const VideoEmbed = (props) => {
 
     const postNewVideoLink = async () => {
         try {
+            const videoSubmissionBody = {
+                videoLink: videoLink,
+                changeToQueueMode: changeToQueueMode
+            }
             const response = await fetch("api/v1/videoLinks", {
                 method: "POST",
                 headers: new Headers({
                     "Content-Type": "application/json"
                 }),
-                body: JSON.stringify( {videoLink: videoLink})
+                body: JSON.stringify(videoSubmissionBody)
             })
             if (!response.ok) {
                 if (response.status === 422) {
@@ -63,7 +67,8 @@ const VideoEmbed = (props) => {
             console.error("Error in fetch", err.message)
         }
     }
-    const formattedTime = format(video.updatedAt, 'MMMM dd, yyyy HH:mm')
+    const timeObject = new Date(props.currentlyPlaying.updatedAt) 
+    const formattedTime = format(timeObject, 'MMMM dd, yyyy HH:mm')
 
     useEffect(() => {
         getVideoLink()
@@ -109,13 +114,11 @@ const VideoEmbed = (props) => {
     }, [props.networkSeekTime])
     
     useEffect(() => {
-        setVideo({
-            updatedAt: new Date(), 
-            fullUrl: props.videoLinks[props.videoLinks.length - 1]
-        })
-        setPlayed(0)
-        playerRef.current.seekTo(0)
-    }, [props.videoLinks])
+        setTimeout(() => {
+            setPlayed(0)
+            playerRef.current.seekTo(0)
+        }, 250) // race condition
+    }, [props.currentlyPlaying])
     
     const setStart = () => {
         playerRef.current.seekTo(props.networkSeekTime)
@@ -173,13 +176,20 @@ const VideoEmbed = (props) => {
     }
     
     const handleProgress = (state) => {
-        if (!seeking) {
-            setPlayed(state.played)
+        if (!seeking && props.playing) {
+            let newPlayed = state.played
+            if (newPlayed === 1) {
+                newPlayed = 0 // fix odd behavior of handleProgress
+            }
+            setPlayed(newPlayed)
         }
     }
     
     const pauseVideo = (playing) => {
-        const seekTimeSeconds = playerRef.current.getCurrentTime()
+        let seekTimeSeconds = playerRef.current.getCurrentTime()
+        if (played === 0) {
+            seekTimeSeconds = 0 // fix odd behavior of getCurrentTime
+        }
         if (seekTimeSeconds !== null) {
             const messageObject = {
                 type: "playing",
@@ -228,6 +238,22 @@ const VideoEmbed = (props) => {
         muteVideo(props.muted)
     }
 
+    const handleQueueMode = () => {
+        setChangeToQueueMode(!changeToQueueMode)
+    }
+    
+    const handleSkipButton = () => {
+        const messageObject = {
+            type: "skip"
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
+
+    let skipButton = ""
+    if (props.queueMode) {
+        skipButton = <input type="button" value="Skip" onClick={handleSkipButton} />
+    }
+
     return (
         <div>
             <div className="player-container">
@@ -238,7 +264,7 @@ const VideoEmbed = (props) => {
                     loop={true}
                     playing={props.playing}
                     muted={props.muted}
-                    url={video.fullUrl}
+                    url={props.currentlyPlaying.fullUrl}
                     onProgress={handleProgress}
                     onReady={setStart}
                 />
@@ -276,6 +302,9 @@ const VideoEmbed = (props) => {
                     <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
+                    {skipButton}
+                    Queue Mode
+                    <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
                 </form>
             </div>
             First video link: {initialVideo}

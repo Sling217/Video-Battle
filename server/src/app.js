@@ -15,22 +15,47 @@ import { WebSocket, WebSocketServer } from 'ws'
 import EventEmitter from "events";
 import User from "./models/User.js";
 import { createServer } from "http";
-
+import MainChannelQueue from "./models/MainChannelQueue.js";
+import serializeVideoQueue from "./services/serializeVideoQueue.js";
 const server = createServer(app)
 
 const wss = new WebSocketServer({ server })
+
+MainChannelQueue.query().first().then((result) => {
+  if (result) {
+    channelState.videoDuration = result.duration
+  }
+})
 
 const channelState = {
   playing: true,
   muted: true,
   seekTimeSeconds: 0,
-  timeSeekReceived: new Date()
+  timeSeekReceived: new Date(),
+  queueMode: true,
+  videoDuration: 0,
+  videoTimeoutId: null
 }
 
 const videoLinkProcessed = new EventEmitter()
-videoLinkProcessed.on('videoLinkPostTime', (data) => {
-  channelState.timeSeekReceived = data
+videoLinkProcessed.on('videoLinkPostData', (data) => {
+  channelState.timeSeekReceived = data.timeSeekReceived
   channelState.seekTimeSeconds = 0
+  if (!channelState.queueMode && data.queueMode) {
+    channelState.queueMode = data.queueMode
+    updateVideoTimeout(channelState.playing)
+  }
+  channelState.queueMode = data.queueMode
+  if (!data.queueMode && channelState.videoTimeoutId !== null) {
+    clearTimeout(channelState.videoTimeoutId)
+  }
+  if (channelState.queueMode) {
+    MainChannelQueue.query().first().then((result) => {
+      if (result) {
+        channelState.videoDuration = result.duration
+      }
+    })
+  }
 })
 
 const getSeekTimeInSeconds = (channelState) => {
@@ -41,19 +66,79 @@ const getSeekTimeInSeconds = (channelState) => {
   return channelState.seekTimeSeconds + timeElapsed 
 }
 
-const shouldForwardMessage = (message) => {
+const advanceQueue = async () => {
+  const wholeQueue = await MainChannelQueue.query()
+  if (wholeQueue.length > 1) {
+    await MainChannelQueue.query().delete().where("id", wholeQueue[0].id)
+    const newQueue = serializeVideoQueue(wholeQueue.slice(1))
+    const messageObject = {
+      type: "videoQueue", 
+      content: newQueue
+    }
+    wss.clients.forEach((client)=> {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(messageObject))
+      }
+    })
+    return newQueue[0].duration
+  }
+  return null
+}
+
+const updateVideoTimeout = (playing) => {
+  if (channelState.videoTimeoutId !== null) {
+    clearTimeout(channelState.videoTimeoutId)
+    channelState.videoTimeoutId = null
+  }
+  if (playing && channelState.queueMode) {
+    const timeoutSeconds = channelState.videoDuration - channelState.seekTimeSeconds
+    const id = setTimeout( async () => {
+      const duration = await advanceQueue()
+      if (duration !== null) {
+        channelState.videoDuration = duration
+      }
+      channelState.seekTimeSeconds = 0
+      channelState.timeSeekReceived = new Date()
+      updateVideoTimeout(channelState.playing)
+    }, timeoutSeconds*1000)
+    channelState.videoTimeoutId = id
+  }
+}
+
+if (channelState.queueMode) {
+  updateVideoTimeout(channelState.playing)
+}
+
+const shouldForwardMessage = async (message) => {
   if (message.type === "seekTime") {
     channelState.seekTimeSeconds = message.content
     channelState.timeSeekReceived = new Date()
+    if (channelState.queueMode) {
+      updateVideoTimeout(channelState.playing)
+    }
     return(true)
   } else if (message.type === "playing") {
     channelState[message.type] = message.content
     channelState.seekTimeSeconds = message.seekTimeSeconds
     channelState.timeSeekReceived = new Date()
+    if (channelState.queueMode) {
+      updateVideoTimeout(channelState.playing)
+    }
     return(true)
   } else if (message.type === "muted") {
     channelState[message.type] = message.content
     return(true)
+  } else if (message.type === "skip") {
+    if (channelState.queueMode) {
+    const duration = await advanceQueue()
+    if (duration !== null) {
+      channelState.videoDuration = duration
+      channelState.seekTimeSeconds = 0
+      channelState.timeSeekReceived = new Date()
+    }
+      updateVideoTimeout(channelState.playing)
+    }
+    return(false)
   }
   else {
     return(false)
@@ -106,10 +191,8 @@ wss.on('connection', (ws, req) => {
   })
 
   const interval = setInterval( () => {
-    wss.clients.forEach((client) => {
-      client.ping()
-    })
-  })
+    ws.ping()
+  }, 30 * 1000)
 
   ws.on('close', () => {
     const users = []
@@ -125,12 +208,14 @@ wss.on('connection', (ws, req) => {
         client.send(JSON.stringify(messageUserList))
       }
     })
+    clearInterval(interval)
   })
 
   const initialState = {
     playing: channelState.playing,
     muted: channelState.muted,
-    networkSeekTime: getSeekTimeInSeconds(channelState)
+    networkSeekTime: getSeekTimeInSeconds(channelState),
+    queueMode: channelState.queueMode
   }
   const messageObject = {
     type: "initial",
