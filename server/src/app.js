@@ -191,10 +191,8 @@ wss.on('connection', (ws, req) => {
   })
 
   const interval = setInterval( () => {
-    wss.clients.forEach((client) => {
-      client.ping()
-    })
-  })
+    ws.ping()
+  }, 30 * 1000)
 
   ws.on('close', () => {
     const users = []
@@ -210,6 +208,7 @@ wss.on('connection', (ws, req) => {
         client.send(JSON.stringify(messageUserList))
       }
     })
+    clearInterval(interval)
   })
 
   const initialState = {
