@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect, useRef } from 'react' // remove useRef?
+import { useState, useEffect } from 'react'
 import VideoEmbed from './VideoEmbed'
 import VideoLinksBox from './VideoLinksBox'
 import UserList from './UserList'
