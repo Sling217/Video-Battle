@@ -9,7 +9,7 @@ class MainChannelQueue extends Model {
             type: "object",
             required: ["fullUrl"],
             properties: {
-                fullUrl: { type: "string", pattern: "" },
+                fullUrl: { type: "string", pattern: "https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\+.~#?&//=]*)" },
                 userId: { type: ["integer", "string"] },
                 anonymousSubmission: { type: "boolean" }
             },
