@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import VideoEmbed from './VideoEmbed'
 import VideoLinksBox from './VideoLinksBox'
 import UserList from './UserList'
+import Chat from './Chat'
 
 const Home = (props) => {
     const [videoLinks, setVideoLinks] = useState([])
@@ -84,6 +85,7 @@ const Home = (props) => {
                 setVideoQueue={setVideoQueue}
                 setVideoLink={setVideoLink}
             />
+            <Chat />
             <VideoLinksBox
                 videoLinks={videoLinks}
                 videoQueue={videoQueue}

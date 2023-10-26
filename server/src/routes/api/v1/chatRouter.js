@@ -12,6 +12,8 @@ chatRouter.post("/", async (req, res) => {
         const { body } = req 
         const cleanedInput = cleanUserInput(body)
         const chatsContents = await MainChannelChat.query().insertAndFetch(cleanedInput)
+        console.log("chatsContent is: ", chatsContents)
+        res.status(201)
     }
     catch (err){
     }
