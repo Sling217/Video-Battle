@@ -84,7 +84,10 @@ const VideoEmbed = (props) => {
             return
         }
         window.addEventListener("keydown",(event) => {
-            if (event.target.name === "videoLink") {
+            if (
+                event.target.name === "videoLink" 
+                || event.target.name === "chatContent"
+            ) {
                 return
             }
             switch(event.code) {

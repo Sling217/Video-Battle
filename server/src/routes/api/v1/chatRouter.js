@@ -11,12 +11,27 @@ chatRouter.post("/", async (req, res) => {
     try {
         const { body } = req 
         const cleanedInput = cleanUserInput(body)
+        cleanedInput.username = req.user.username
+        cleanedInput.userId = req.user.id
         const chatsContents = await MainChannelChat.query().insertAndFetch(cleanedInput)
         console.log("chatsContent is: ", chatsContents)
         res.status(201)
     }
-    catch (err){
+    catch (err) {
+        res.status(500).json({ errors: err.message })
     }
 })
+
+chatRouter.get("/", async (req, res) => {
+    try {
+        const chatContents = await MainChannelChat.query()
+        const responseObject = {
+            chatContents: chatContents
+        }
+        res.status(200).json(responseObject)
+    } catch (err) {
+        res.status(500).json({ errors: err.message }) 
+    }
+}) 
 
 export default chatRouter

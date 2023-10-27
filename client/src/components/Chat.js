@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 
 const Chat = (props) => {
 
     const [chatContent, setChatContent] = useState("")
+    const [chatHistory, setChatHistory] = useState([])
 
     const postChat = async () => {
         try {
@@ -21,6 +22,23 @@ const Chat = (props) => {
             console.error("Error in fetch", err.message)
         }
     }
+
+    const getChat = async () => {
+        try {
+            const response = await fetch("api/v1/chats")
+            const responseBody = await response.json()
+            if (!response.ok) {
+                throw new Error(`${response.status} (${response.statusText})`)
+            }
+            setChatHistory(responseBody.chatContents)  
+        } catch (err) {
+            console.error("Error in fetch", err.message)
+        }
+    }
+
+    useEffect(() => {
+        getChat()
+    },[])
 
     const handleSubmit = (event) => {
         event.preventDefault()
