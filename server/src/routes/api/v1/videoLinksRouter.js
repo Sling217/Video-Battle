@@ -19,7 +19,7 @@ videoLinksRouter.get("/", async (req, res) => {
         }
         res.status(200).json(responseObject)
     } catch(err) {
-        res.status(500).json( {errors: err.message } )
+        res.status(500).json({ errors: err.message })
     }
 })
 

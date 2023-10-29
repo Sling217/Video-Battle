@@ -2,5 +2,6 @@
 const User = require("./User.js")
 const VideoLink = require("./VideoLink.js")
 const MainChannelQueue = require("./MainChannelQueue.js")
+const MainChannelChat = require("./MainChannelChat.js")
 
-module.exports = {User, VideoLink, MainChannelQueue};
+module.exports = {User, VideoLink, MainChannelQueue, MainChannelChat};

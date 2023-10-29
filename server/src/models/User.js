@@ -26,16 +26,17 @@ class User extends uniqueFunc(Model) {
   static get jsonSchema() {
     return {
       type: "object",
-      required: ["email"],
+      required: ["email", "username"],
       properties: {
         email: { type: "string", pattern: "^\\S+@\\S+\\.\\S+$" },
         cryptedPassword: { type: "string" },
+        username: { type: "string" }
       },
     };
   }
 
   static get relationMappings() {
-    const { VideoLink, MainChannelQueue } = require("./index.js")
+    const { VideoLink, MainChannelQueue, MainChannelChat } = require("./index.js")
     return {
       videoLinks: {
         relation: Model.HasManyRelation,
@@ -51,6 +52,14 @@ class User extends uniqueFunc(Model) {
         join: {
           from: "users.id",
           to: "mainChannelQueue.userId"
+        }
+      },
+      mainChannelChats: {
+        relation: Model.HasManyRelation,
+        modelClass: MainChannelChat,
+        join: {
+          from: "users.id",
+          to: "mainChannelChats.userId"
         }
       }
     }

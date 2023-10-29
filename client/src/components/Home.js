@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import VideoEmbed from './VideoEmbed'
 import VideoLinksBox from './VideoLinksBox'
 import UserList from './UserList'
+import Chat from './Chat'
 
 const Home = (props) => {
     const [videoLinks, setVideoLinks] = useState([])
@@ -24,6 +25,7 @@ const Home = (props) => {
     const [playing, setPlaying] = useState(true)
     const [muted, setMuted] = useState(true)
     const [userList, setUserList] = useState([])
+    const [chatHistory, setChatHistory] = useState([])
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
@@ -47,6 +49,13 @@ const Home = (props) => {
         } else if (receivedData.type === "videoQueue") {
             setQueueMode(true)
             setVideoQueue(receivedData.content)
+        } else if (receivedData.type == "chat") {
+            const newChat = {
+                username: receivedData.username,
+                content: receivedData.content,
+                id: receivedData.id
+            }
+            setChatHistory((chatHistory) => [ ...chatHistory, newChat ])
         }
     }
 
@@ -72,7 +81,7 @@ const Home = (props) => {
     const currentlyPlaying = queueMode ? videoQueueFirstVideo : videoLink
 
     return (
-        <div>
+        <div id="homeComponent" tabIndex="0">
             <VideoEmbed
                 videoLinks={videoLinks}
                 currentlyPlaying = {currentlyPlaying}
@@ -83,6 +92,11 @@ const Home = (props) => {
                 queueMode={queueMode}
                 setVideoQueue={setVideoQueue}
                 setVideoLink={setVideoLink}
+            />
+            <Chat 
+                chatHistory={chatHistory}
+                setChatHistory={setChatHistory}
+                user={props.user}
             />
             <VideoLinksBox
                 videoLinks={videoLinks}
