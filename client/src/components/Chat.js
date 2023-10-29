@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
+import translateServerErrors from "../services/translateServerErrors";
+import ErrorList from "./layout/ErrorList";
 
 const Chat = (props) => {
-
+    const [fetchErrors, setFetchErrors] = useState({})
     const [chatContent, setChatContent] = useState("")
 
     const postChat = async () => {
@@ -10,13 +12,23 @@ const Chat = (props) => {
             const chatSubmissionBody = {
                 content: chatContent
             }
-            await fetch("api/v1/chats", {
+            const response = await fetch("api/v1/chats", {
                 method: "POST",
                 headers: new Headers({
                     "Content-Type": "application/json"
                 }),
                 body: JSON.stringify(chatSubmissionBody)
             })
+            if (!response.ok) {
+                if (response.status === 422) {
+                    const errorBody = await response.json()
+                    const newFetchErrors = translateServerErrors(errorBody.errors)
+                    return setFetchErrors(newFetchErrors)
+                } else {
+                    const errorMessage = await response.json()
+                    throw new Error(errorMessage)
+                }
+            }
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -42,6 +54,7 @@ const Chat = (props) => {
     const handleSubmit = (event) => {
         event.preventDefault()
         postChat()
+        setChatContent("")
     }
 
     const handleInputChange = (event) => {
@@ -74,6 +87,7 @@ const Chat = (props) => {
                     value={chatContent}
                 />
                 </label>
+                <ErrorList errors={fetchErrors} />
                 <input className={hideClass} type="submit" value="Send Chat" />
             </form>
         </div>

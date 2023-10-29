@@ -9,7 +9,6 @@ exports.up = async (knex) => {
     console.log("Creating table mainChannelChats")
     return knex.schema.createTable("mainChannelChats", (table) => {
         table.bigIncrements("id")
-        table.string("username").notNullable()
         table.text("content").notNullable()
         table.bigInteger("userId").unsigned().index().references("users.id")
         table.timestamp("createdAt").notNullable().defaultTo(knex.fn.now())

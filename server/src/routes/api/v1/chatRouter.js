@@ -12,14 +12,12 @@ chatRouter.post("/", async (req, res) => {
     try {
         const { body } = req 
         const cleanedInput = cleanUserInput(body)
-        cleanedInput.username = req.user.username
         cleanedInput.userId = req.user.id
-        const chatsContents = await MainChannelChat.query().insertAndFetch(cleanedInput)
-
+        const chatsContents = await MainChannelChat.query().insertAndFetch(cleanedInput).withGraphFetched('user')
         const wss = app.wss
         const messageObject = {
             type: "chat",
-            username: chatsContents.username,
+            username: chatsContents.user.username,
             content: chatsContents.content
         }
         wss.clients.forEach(client => {
@@ -27,23 +25,27 @@ chatRouter.post("/", async (req, res) => {
                 client.send(JSON.stringify(messageObject))
             }
         })
-
         res.status(201)
     }
     catch (err) {
-        res.status(500).json({ errors: err.message })
+        if (err instanceof ValidationError) {
+            res.status(422).json({ errors: err.data })
+        } else {
+            console.error(err.message)
+            res.status(500).json({ errors: err.message })
+        }
     }
 })
 
 chatRouter.get("/", async (req, res) => {
     try {
-        const chatContents = await MainChannelChat.query()
+        const chatContents = await MainChannelChat.query().withGraphFetched('user')
         const responseObject = {
             chatContents: serializeChat(chatContents)
         }
         res.status(200).json(responseObject)
     } catch (err) {
-        res.status(500).json({ errors: err.message }) 
+        res.status(500).json({ errors: err.message })
     }
 }) 
 

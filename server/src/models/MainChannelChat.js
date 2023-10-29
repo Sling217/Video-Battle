@@ -7,11 +7,10 @@ class MainChannelChat extends Model {
     static get jsonSchema() {
         return {
             type: "object",
-            required: ["content", "username"],
+            required: ["content"],
             properties: {
                 content: { type: "string" },
-                userId: { type: ["integer", "string"] },
-                username: { type: "string" }
+                userId: { type: ["integer", "string"] }
             }
         }
     }
