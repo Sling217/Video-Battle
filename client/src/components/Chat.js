@@ -8,6 +8,9 @@ const Chat = (props) => {
     const [chatContent, setChatContent] = useState("")
 
     const postChat = async () => {
+        if (chatContent === "") {
+            return
+        }
         try {
             const chatSubmissionBody = {
                 content: chatContent
@@ -29,6 +32,7 @@ const Chat = (props) => {
                     throw new Error(errorMessage)
                 }
             }
+            setFetchErrors({})
         } catch(err) {
             console.error("Error in fetch", err.message)
         }

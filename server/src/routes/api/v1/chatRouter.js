@@ -18,7 +18,8 @@ chatRouter.post("/", async (req, res) => {
         const messageObject = {
             type: "chat",
             username: chatsContents.user.username,
-            content: chatsContents.content
+            content: chatsContents.content,
+            id: chatsContents.id
         }
         wss.clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
