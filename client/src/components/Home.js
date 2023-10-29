@@ -25,6 +25,7 @@ const Home = (props) => {
     const [playing, setPlaying] = useState(true)
     const [muted, setMuted] = useState(true)
     const [userList, setUserList] = useState([])
+    const [chatHistory, setChatHistory] = useState([])
     
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
@@ -48,12 +49,19 @@ const Home = (props) => {
         } else if (receivedData.type === "videoQueue") {
             setQueueMode(true)
             setVideoQueue(receivedData.content)
+        } else if (receivedData.type == "chat") {
+            const newChat = {
+                username: receivedData.username,
+                content: receivedData.content,
+                id: receivedData.id
+            }
+            setChatHistory((chatHistory) => [ ...chatHistory, newChat ])
         }
     }
 
     useEffect(() => {
-        // const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
-        const socket = new WebSocket('ws://localhost:3000')
+        const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
+        // const socket = new WebSocket('ws://localhost:3000')
         socket.addEventListener('message', readNewMessage)
         setSocket(socket)
         return(() => {
@@ -73,7 +81,7 @@ const Home = (props) => {
     const currentlyPlaying = queueMode ? videoQueueFirstVideo : videoLink
 
     return (
-        <div>
+        <div id="homeComponent" tabIndex="0">
             <VideoEmbed
                 videoLinks={videoLinks}
                 currentlyPlaying = {currentlyPlaying}
@@ -85,7 +93,11 @@ const Home = (props) => {
                 setVideoQueue={setVideoQueue}
                 setVideoLink={setVideoLink}
             />
-            <Chat />
+            <Chat 
+                chatHistory={chatHistory}
+                setChatHistory={setChatHistory}
+                user={props.user}
+            />
             <VideoLinksBox
                 videoLinks={videoLinks}
                 videoQueue={videoQueue}

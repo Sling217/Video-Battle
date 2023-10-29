@@ -4,14 +4,13 @@ import { useState } from "react";
 const Chat = (props) => {
 
     const [chatContent, setChatContent] = useState("")
-    const [chatHistory, setChatHistory] = useState([])
 
     const postChat = async () => {
         try {
             const chatSubmissionBody = {
                 content: chatContent
             }
-            const response = await fetch("api/v1/chats", {
+            await fetch("api/v1/chats", {
                 method: "POST",
                 headers: new Headers({
                     "Content-Type": "application/json"
@@ -30,7 +29,7 @@ const Chat = (props) => {
             if (!response.ok) {
                 throw new Error(`${response.status} (${response.statusText})`)
             }
-            setChatHistory(responseBody.chatContents)  
+            props.setChatHistory(responseBody.chatContents)
         } catch (err) {
             console.error("Error in fetch", err.message)
         }
@@ -49,19 +48,33 @@ const Chat = (props) => {
         setChatContent(event.currentTarget.value)
     }
 
+    const chatDisplay = props.chatHistory.map(chat => {
+        return (
+        <div key={chat.id}>
+            {chat.username}: {chat.content}{`\n`}
+        </div>
+        )
+    })
+
+    const hideClass = props.user ? "" : "hide"
+
     return(
         <div>
+            Chat
+            <div className="callout">
+                {chatDisplay}
+            </div>
             <form onSubmit={handleSubmit}>
                 <label htmlFor="chatContent">
-                Chat
                 <input
+                    className={hideClass}
                     type="text"
                     name="chatContent"
                     onChange={handleInputChange}
                     value={chatContent}
                 />
                 </label>
-                <input type="submit" value="Send Chat" />
+                <input className={hideClass} type="submit" value="Send Chat" />
             </form>
         </div>
     )
