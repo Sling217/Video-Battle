@@ -44,6 +44,7 @@ const Home = (props) => {
             setPlaying(receivedData.content.playing)
             setMuted(receivedData.content.muted)
             setNetworkSeekTime(parseFloat(receivedData.content.networkSeekTime))
+            setQueueMode(receivedData.content.queueMode)
         } else if (receivedData.type === "userList") {
             setUserList(receivedData.content)
         } else if (receivedData.type === "videoQueue") {
