@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import translateServerErrors from "../services/translateServerErrors";
 import ErrorList from "./layout/ErrorList";
@@ -69,13 +69,26 @@ const Chat = (props) => {
         )
     })
 
+    //https://stackoverflow.com/questions/37620694/how-to-scroll-to-bottom-in-react
+    const messagesEndRef = useRef(null)
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+    useEffect(() => {
+        scrollToBottom()
+    }, [props.chatHistory])
+
     const hideClass = props.user ? "" : "hide"
 
     return(
         <div>
             Chat
-            <div className="callout">
+            <div className="chat-container callout">
                 {chatDisplay}
+                <div
+                    style={{ float: "left", clear: "both" }}
+                    ref={messagesEndRef}
+                />
             </div>
             <form onSubmit={handleSubmit}>
                 <label htmlFor="chatContent">

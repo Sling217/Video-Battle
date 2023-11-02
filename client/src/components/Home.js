@@ -44,6 +44,7 @@ const Home = (props) => {
             setPlaying(receivedData.content.playing)
             setMuted(receivedData.content.muted)
             setNetworkSeekTime(parseFloat(receivedData.content.networkSeekTime))
+            setQueueMode(receivedData.content.queueMode)
         } else if (receivedData.type === "userList") {
             setUserList(receivedData.content)
         } else if (receivedData.type === "videoQueue") {
@@ -60,8 +61,8 @@ const Home = (props) => {
     }
 
     useEffect(() => {
-        const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
-        // const socket = new WebSocket('ws://localhost:3000')
+        // const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
+        const socket = new WebSocket('ws://localhost:3000')
         socket.addEventListener('message', readNewMessage)
         setSocket(socket)
         return(() => {
@@ -81,29 +82,35 @@ const Home = (props) => {
     const currentlyPlaying = queueMode ? videoQueueFirstVideo : videoLink
 
     return (
-        <div id="homeComponent" tabIndex="0">
-            <VideoEmbed
-                videoLinks={videoLinks}
-                currentlyPlaying = {currentlyPlaying}
-                networkSeekTime={networkSeekTime}
-                socket={socket}
-                playing={playing}
-                muted={muted}
-                queueMode={queueMode}
-                setVideoQueue={setVideoQueue}
-                setVideoLink={setVideoLink}
-            />
-            <Chat 
-                chatHistory={chatHistory}
-                setChatHistory={setChatHistory}
-                user={props.user}
-            />
-            <VideoLinksBox
-                videoLinks={videoLinks}
-                videoQueue={videoQueue}
-                queueMode={queueMode}
-            />
-            <UserList userList={userList} />
+        <div id="homeComponent" tabIndex="0" className="grid-container">
+            <div className="grid-x">
+                <div className="cell small-6">
+                    <VideoEmbed
+                        videoLinks={videoLinks}
+                        currentlyPlaying = {currentlyPlaying}
+                        networkSeekTime={networkSeekTime}
+                        socket={socket}
+                        playing={playing}
+                        muted={muted}
+                        queueMode={queueMode}
+                        setVideoQueue={setVideoQueue}
+                        setVideoLink={setVideoLink}
+                    />
+                </div>
+                <div className="cell small-4 small-offset-2">
+                <UserList userList={userList} />
+                <Chat 
+                    chatHistory={chatHistory}
+                    setChatHistory={setChatHistory}
+                    user={props.user}
+                />
+                <VideoLinksBox
+                    videoLinks={videoLinks}
+                    videoQueue={videoQueue}
+                    queueMode={queueMode}
+                />
+                </div>
+            </div>
         </div>
     )
 }

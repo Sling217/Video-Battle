@@ -13,6 +13,10 @@
   tab-size: 4;
 }
 
+.grid-container {
+  max-width: none; // on large window width, keeps margin small
+}
+
 .player-container {
   display: flex;
   flex-direction: column;
@@ -21,4 +25,33 @@
 
 .seek-bar {
   width: 640px;
+}
+
+.chat-container {
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+.video-link-submit { //https://www.youtube.com/watch?v=kr5nR6qHScA
+  width: 400px;
+  max-width: 100%;
+  position: relative;
+}
+
+.video-link-submit input {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgb(142, 142, 142);
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  width: 100%;
+}
+
+.video-link-submit button {
+  border-radius: 50%;
+  height: 80%;
+  aspect-ratio: 1;
+  position: absolute;
+  right: 0;
+  transform: translateX(-10%);
+  top: 10%;
 }
