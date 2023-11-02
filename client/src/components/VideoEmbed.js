@@ -14,10 +14,12 @@ const VideoEmbed = (props) => {
     const [errors, setErrors] = useState({})
     const [fetchErrors, setFetchErrors] = useState([])
     const [changeToQueueMode, setChangeToQueueMode] = useState(props.queueMode)
-
+    const [playerWidth, setPlayerWidth] = useState(640)
+    
     const playerRef = useRef()
     const playingRef = useRef(props.playing)
     const mutedRef = useRef(props.muted)
+    const seekBarRef = useRef(null)
 
     const getVideoLink = async () => {
         try {
@@ -257,6 +259,18 @@ const VideoEmbed = (props) => {
     if (props.queueMode) {
         skipButton = <input type="button" value="Skip" onClick={handleSkipButton} />
     }
+    
+    useEffect(() => {
+        const handleResize = (event) => {
+            if (seekBarRef.current) {
+                seekBarRef.current.style.width = window.innerWidth/2-50 + 'px'
+            }
+            setPlayerWidth(window.innerWidth/2)
+        }
+        window.addEventListener('resize', handleResize)
+        handleResize()
+        return () => window.removeEventListener('resize', handleResize)
+    })
 
     return (
         <div>
@@ -271,10 +285,30 @@ const VideoEmbed = (props) => {
                     url={props.currentlyPlaying.fullUrl}
                     onProgress={handleProgress}
                     onReady={setStart}
+                    width={playerWidth}
+                    height={playerWidth*9/16}
                 />
                 <h5>
                     Video Submission Time: {formattedTime}
                 </h5>
+            </div>
+            Submit a new video! Paste the link here:
+            <div className="video-link-submit">
+                <form onSubmit={handleSubmit}>
+                    <label htmlFor='videoLink'>
+                        <input
+                            type="text"
+                            name="videoLink"
+                            onChange={handleInputChange}
+                            value={videoLink}
+                        />
+                    </label>
+                    <button type="submit">
+                        ↪️
+                    </button>
+                </form>
+                <FormError error={errors.linkValidation} />
+                <ErrorList errors={fetchErrors} />
             </div>
             <div className="callout">
                 <h6>
@@ -284,6 +318,8 @@ const VideoEmbed = (props) => {
                     Synchronized Seek Time
                 </h6>
                 <input
+                    id="seek-bar"
+                    ref={seekBarRef}
                     className="seek-bar"
                     type="range" min={0} max={0.999999} step="any"
                     value={played}
@@ -291,25 +327,11 @@ const VideoEmbed = (props) => {
                     onChange={handleSeekChange}
                     onMouseUp={handleSeekMouseUp}
                 />
-                <form onSubmit={handleSubmit}>
-                    <label htmlFor='videoLink'>
-                        Video Link
-                        <input
-                            type="text"
-                            name="videoLink"
-                            onChange={handleInputChange}
-                            value={videoLink}
-                        />
-                    </label>
-                    <FormError error={errors.linkValidation} />
-                    <ErrorList errors={fetchErrors} />
-                    <input type="submit" value="Submit" />
                     <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
                     <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
                     {skipButton}
                     Queue Mode
                     <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
-                </form>
             </div>
             First video link: {initialVideo}
         </div>
