@@ -72,8 +72,8 @@ const Chat = (props) => {
     //https://stackoverflow.com/questions/37620694/how-to-scroll-to-bottom-in-react
     const messagesEndRef = useRef(null)
     const scrollToBottom = () => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-        }
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
     useEffect(() => {
         scrollToBottom()
     }, [props.chatHistory])
