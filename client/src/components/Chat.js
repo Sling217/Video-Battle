@@ -78,30 +78,32 @@ const Chat = (props) => {
         scrollToBottom()
     }, [props.chatHistory])
 
-    const hideClass = props.user ? "" : "hide"
+    const hideClass = props.user ? "chat-submit" : "chat-submit hide"
 
     return(
         <div>
             Chat
-            <div className="chat-container callout">
+            <div className="chat-display callout">
                 {chatDisplay}
                 <div
                     style={{ float: "left", clear: "both" }}
                     ref={messagesEndRef}
                 />
             </div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className={hideClass}>
                 <label htmlFor="chatContent">
-                <input
-                    className={hideClass}
-                    type="text"
-                    name="chatContent"
-                    onChange={handleInputChange}
-                    value={chatContent}
-                />
+                    <input
+                        className={hideClass}
+                        type="text"
+                        name="chatContent"
+                        onChange={handleInputChange}
+                        value={chatContent}
+                    />
                 </label>
                 <ErrorList errors={fetchErrors} />
-                <input className={hideClass} type="submit" value="Send Chat" />
+                <button type="submit"> 
+                    &#x1F4E9;
+                </button>
             </form>
         </div>
     )
