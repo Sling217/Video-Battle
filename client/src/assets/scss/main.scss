@@ -79,10 +79,11 @@
   transform: translateX(-10%);
   top: 10%;
 }
+
 body {
   background-color: #aaaaaa;
 }
 
-.switch {
-  paddle-offset: 10.2rem;
+.switch-active, .switch-inactive {
+  font-size: 0.65rem;
 }

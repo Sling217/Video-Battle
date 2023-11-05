@@ -50,13 +50,15 @@ const Home = (props) => {
         } else if (receivedData.type === "videoQueue") {
             setQueueMode(true)
             setVideoQueue(receivedData.content)
-        } else if (receivedData.type == "chat") {
+        } else if (receivedData.type === "chat") {
             const newChat = {
                 username: receivedData.username,
                 content: receivedData.content,
                 id: receivedData.id
             }
             setChatHistory((chatHistory) => [ ...chatHistory, newChat ])
+        } else if (receivedData.type === "queueModeSwitch") {
+            setQueueMode(receivedData.content)
         }
     }
 

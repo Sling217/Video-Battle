@@ -322,7 +322,7 @@ const VideoEmbed = (props) => {
                 <FormError error={errors.linkValidation} />
                 <ErrorList errors={fetchErrors} />
             </div>
-                Queue Mode
+                Submit video in queue mode
                 <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
             <div className="callout">
                 <h6>
@@ -345,8 +345,6 @@ const VideoEmbed = (props) => {
                 <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
                 {skipButton}
                 <div>
-
-                    Queue Mode
                     <div className="switch large">
                         <input className="switch-input" id="exampleSwitch" type="checkbox" name="exampleSwitch" onClick={handleQueueModeSwitch}/>
                         <label className="switch-paddle" htmlFor="exampleSwitch">
@@ -355,7 +353,6 @@ const VideoEmbed = (props) => {
                             <span className="switch-inactive" aria-hidden="true">Queue</span>
                         </label>
                     </div>
-                    Battle Mode
                 </div>
             </div>
             First video link: {initialVideo}
