@@ -96,6 +96,11 @@ const Home = (props) => {
                         setVideoQueue={setVideoQueue}
                         setVideoLink={setVideoLink}
                     />
+                    <VideoLinksBox
+                        videoLinks={videoLinks}
+                        videoQueue={videoQueue}
+                        queueMode={queueMode}
+                    />
                 </div>
                 <div className="cell small-4 small-offset-2">
                 <UserList userList={userList} />
@@ -103,11 +108,6 @@ const Home = (props) => {
                     chatHistory={chatHistory}
                     setChatHistory={setChatHistory}
                     user={props.user}
-                />
-                <VideoLinksBox
-                    videoLinks={videoLinks}
-                    videoQueue={videoQueue}
-                    queueMode={queueMode}
                 />
                 </div>
             </div>
