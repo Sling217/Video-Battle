@@ -247,6 +247,14 @@ const VideoEmbed = (props) => {
     const handleQueueMode = () => {
         setChangeToQueueMode(!changeToQueueMode)
     }
+
+    const handleQueueModeSwitch = () => {
+        const messageObject = {
+            type: "queueModeSwitch",
+            content: !changeToQueueMode
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
     
     const handleSkipButton = () => {
         const messageObject = {
@@ -271,6 +279,10 @@ const VideoEmbed = (props) => {
         handleResize()
         return () => window.removeEventListener('resize', handleResize)
     })
+
+    useEffect(() => {
+        setChangeToQueueMode(props.queueMode)
+    },[props.queueMode])
 
     return (
         <div>
@@ -310,6 +322,8 @@ const VideoEmbed = (props) => {
                 <FormError error={errors.linkValidation} />
                 <ErrorList errors={fetchErrors} />
             </div>
+                Queue Mode
+                <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
             <div className="callout">
                 <h6>
                     Networked video controls
@@ -327,11 +341,22 @@ const VideoEmbed = (props) => {
                     onChange={handleSeekChange}
                     onMouseUp={handleSeekMouseUp}
                 />
-                    <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
-                    <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
-                    {skipButton}
+                <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
+                <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
+                {skipButton}
+                <div>
+
                     Queue Mode
-                    <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
+                    <div className="switch large">
+                        <input className="switch-input" id="exampleSwitch" type="checkbox" name="exampleSwitch" onClick={handleQueueModeSwitch}/>
+                        <label className="switch-paddle" htmlFor="exampleSwitch">
+                            <span className="show-for-sr">Queue Mode Switch</span>
+                            <span className="switch-active" aria-hidden="true">Battle</span>
+                            <span className="switch-inactive" aria-hidden="true">Queue</span>
+                        </label>
+                    </div>
+                    Battle Mode
+                </div>
             </div>
             First video link: {initialVideo}
         </div>
