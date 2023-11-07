@@ -6,11 +6,10 @@ import UserList from './UserList'
 import Chat from './Chat'
 
 const Home = (props) => {
-    const [videoLinks, setVideoLinks] = useState([])
-    const [videoLink, setVideoLink] = useState({
+    const [videoLinks, setVideoLinks] = useState([{
         fullUrl: "",
         updatedAt: new Date()
-    })
+    }])
     const [queueMode, setQueueMode] = useState(true)
     const [videoQueue, setVideoQueue] = useState([{
         fullUrl: "",
@@ -26,14 +25,13 @@ const Home = (props) => {
     const [muted, setMuted] = useState(true)
     const [userList, setUserList] = useState([])
     const [chatHistory, setChatHistory] = useState([])
-    
+
     const readNewMessage = (event) => {
         const receivedData = JSON.parse(event.data)
         if (receivedData.type === "videoLink") {
             setQueueMode(false)
-            setVideoLinks((videoLinks) => [ ...videoLinks, `${receivedData.content.fullUrl}` ])
+            setVideoLinks((videoLinks) => [ ...videoLinks, receivedData.content ])
             setNetworkSeekTime(0)
-            setVideoLink(receivedData.content)
         } else if (receivedData.type === "seekTime") {
             setNetworkSeekTime(receivedData.content)
         } else if (receivedData.type === "playing") {
@@ -63,8 +61,8 @@ const Home = (props) => {
     }
 
     useEffect(() => {
-        // const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
-        const socket = new WebSocket('ws://localhost:3000')
+        const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
+        // const socket = new WebSocket('ws://localhost:3000')
         socket.addEventListener('message', readNewMessage)
         setSocket(socket)
         return(() => {
@@ -80,15 +78,14 @@ const Home = (props) => {
                 setVideoQueueFirstVideo(videoQueue[0])
         }
     }, [videoQueue])
-    
-    const currentlyPlaying = queueMode ? videoQueueFirstVideo : videoLink
+ 
+    const currentlyPlaying = queueMode ? videoQueueFirstVideo : videoLinks[videoLinks.length-1]
 
     return (
         <div id="homeComponent" tabIndex="0" className="grid-container">
             <div className="grid-x">
                 <div className="cell small-6">
                     <VideoEmbed
-                        videoLinks={videoLinks}
                         currentlyPlaying = {currentlyPlaying}
                         networkSeekTime={networkSeekTime}
                         socket={socket}
@@ -96,7 +93,7 @@ const Home = (props) => {
                         muted={muted}
                         queueMode={queueMode}
                         setVideoQueue={setVideoQueue}
-                        setVideoLink={setVideoLink}
+                        setVideoLinks={setVideoLinks}
                     />
                     <VideoLinksBox
                         videoLinks={videoLinks}

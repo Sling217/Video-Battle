@@ -8,7 +8,10 @@ const VideoLinksBox = (props) => {
         })
         boxText = arrayOfStrings.join('\n')
     } else {
-        boxText = props.videoLinks.join('\n')
+        const arrayOfStrings = props.videoLinks.map((videoObject) => {
+            return videoObject.fullUrl
+        })
+        boxText = arrayOfStrings.join('\n')
     }
 
     return(
