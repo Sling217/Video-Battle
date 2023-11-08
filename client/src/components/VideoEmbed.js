@@ -1,13 +1,11 @@
 import React from 'react'
 import ReactPlayer from 'react-player'
-import { format } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
 import FormError from './layout/FormError'
 import translateServerErrors from '../services/translateServerErrors'
 import ErrorList from './layout/ErrorList'
 
 const VideoEmbed = (props) => {
-    const [initialVideo, setInitialVideo] = useState("")
     const [videoLink, setVideoLink] = useState("")
     const [played, setPlayed] = useState(0)
     const [seeking, setSeeking] = useState(false)
@@ -32,11 +30,10 @@ const VideoEmbed = (props) => {
                 fullUrl: responseBody.videoLink.fullUrl,
                 updatedAt: new Date(responseBody.videoLink.updatedAt)
             }
-            props.setVideoLink(videoObject)
+            props.setVideoLinks([videoObject])
             if (responseBody.videoQueue.length > 0) {
                 props.setVideoQueue(responseBody.videoQueue)
             }
-            setInitialVideo(responseBody.videoLink.fullUrl)
         } catch(err) {
             console.error("Error in fetch", err.message)
         }
@@ -69,8 +66,6 @@ const VideoEmbed = (props) => {
             console.error("Error in fetch", err.message)
         }
     }
-    const timeObject = new Date(props.currentlyPlaying.updatedAt) 
-    const formattedTime = format(timeObject, 'MMMM dd, yyyy HH:mm')
 
     useEffect(() => {
         getVideoLink()
@@ -247,6 +242,14 @@ const VideoEmbed = (props) => {
     const handleQueueMode = () => {
         setChangeToQueueMode(!changeToQueueMode)
     }
+
+    const handleQueueModeSwitch = () => {
+        const messageObject = {
+            type: "queueModeSwitch",
+            content: !props.queueMode
+        }
+        props.socket.send(JSON.stringify(messageObject))
+    }
     
     const handleSkipButton = () => {
         const messageObject = {
@@ -272,6 +275,15 @@ const VideoEmbed = (props) => {
         return () => window.removeEventListener('resize', handleResize)
     })
 
+    useEffect(() => {
+        setChangeToQueueMode(props.queueMode)
+    },[props.queueMode])
+
+    const dummyFunction = () => {
+        // suppress warning for read-only inputs that expect onChange handler
+        return (true)
+    }
+
     return (
         <div>
             <div className="player-container">
@@ -288,9 +300,6 @@ const VideoEmbed = (props) => {
                     width={playerWidth}
                     height={playerWidth*9/16}
                 />
-                <h5>
-                    Video Submission Time: {formattedTime}
-                </h5>
             </div>
             Submit a new video! Paste the link here:
             <div className="video-link-submit">
@@ -307,9 +316,11 @@ const VideoEmbed = (props) => {
                         ↪️
                     </button>
                 </form>
-                <FormError error={errors.linkValidation} />
-                <ErrorList errors={fetchErrors} />
             </div>
+            <ErrorList errors={fetchErrors} />
+            <FormError error={errors.linkValidation} />
+            Submit video in queue mode
+            <input type="checkbox" checked={changeToQueueMode} onChange={handleQueueMode} />
             <div className="callout">
                 <h6>
                     Networked video controls
@@ -327,13 +338,20 @@ const VideoEmbed = (props) => {
                     onChange={handleSeekChange}
                     onMouseUp={handleSeekMouseUp}
                 />
-                    <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
-                    <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
-                    {skipButton}
-                    Queue Mode
-                    <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
+                <input type="button" value={props.muted ? "Unmute" : "  Mute  "} onClick={handleMuteButton} />
+                <input type="button" value={props.playing ? "  Pause  " : "Unpause"} onClick={handlePauseButton} />
+                {skipButton}
+                <div>
+                    <div className="switch large">
+                        <input className="switch-input" type="checkbox" checked={!props.queueMode} name="queueModeSwitch" onChange={dummyFunction} />
+                        <label className="switch-paddle" htmlFor="queueModeSwitch" onClick={handleQueueModeSwitch}>
+                            <span className="show-for-sr">Queue Mode Switch</span>
+                            <span className="switch-active" aria-hidden="true">Battle</span>
+                            <span className="switch-inactive" aria-hidden="true">Queue</span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            First video link: {initialVideo}
         </div>
     )
 }

@@ -139,6 +139,9 @@ const shouldForwardMessage = async (message) => {
       updateVideoTimeout(channelState.playing)
     }
     return(false)
+  } else if (message.type === "queueModeSwitch") {
+    channelState.queueMode = message.content
+    return(true)
   }
   else {
     return(false)
