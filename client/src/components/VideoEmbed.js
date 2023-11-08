@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactPlayer from 'react-player'
-import { format } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
 import FormError from './layout/FormError'
 import translateServerErrors from '../services/translateServerErrors'
@@ -247,7 +246,7 @@ const VideoEmbed = (props) => {
     const handleQueueModeSwitch = () => {
         const messageObject = {
             type: "queueModeSwitch",
-            content: !changeToQueueMode
+            content: !props.queueMode
         }
         props.socket.send(JSON.stringify(messageObject))
     }
@@ -279,6 +278,11 @@ const VideoEmbed = (props) => {
     useEffect(() => {
         setChangeToQueueMode(props.queueMode)
     },[props.queueMode])
+
+    const dummyFunction = () => {
+        // suppress warning for read-only inputs that expect onChange handler
+        return (true)
+    }
 
     return (
         <div>
@@ -316,7 +320,7 @@ const VideoEmbed = (props) => {
             <ErrorList errors={fetchErrors} />
             <FormError error={errors.linkValidation} />
             Submit video in queue mode
-            <input type="checkbox" checked={changeToQueueMode} onClick={handleQueueMode} />
+            <input type="checkbox" checked={changeToQueueMode} onChange={handleQueueMode} />
             <div className="callout">
                 <h6>
                     Networked video controls
@@ -339,8 +343,8 @@ const VideoEmbed = (props) => {
                 {skipButton}
                 <div>
                     <div className="switch large">
-                        <input className="switch-input" type="checkbox" checked={!changeToQueueMode} name="queueModeSwitch" onClick={handleQueueModeSwitch} />
-                        <label className="switch-paddle" htmlFor="queueModeSwitch">
+                        <input className="switch-input" type="checkbox" checked={!props.queueMode} name="queueModeSwitch" onChange={dummyFunction} />
+                        <label className="switch-paddle" htmlFor="queueModeSwitch" onClick={handleQueueModeSwitch}>
                             <span className="show-for-sr">Queue Mode Switch</span>
                             <span className="switch-active" aria-hidden="true">Battle</span>
                             <span className="switch-inactive" aria-hidden="true">Queue</span>

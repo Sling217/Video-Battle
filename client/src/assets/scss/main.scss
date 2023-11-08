@@ -13,6 +13,10 @@
   tab-size: 4;
 }
 
+body {
+  background-color: #aaaaaa;
+}
+
 .grid-container {
   max-width: none; // on large window width, keeps margin small
 }
@@ -80,10 +84,24 @@
   top: 10%;
 }
 
-body {
-  background-color: #aaaaaa;
-}
-
 .switch-active, .switch-inactive {
   font-size: 0.65rem;
+}
+
+.dark-gray {
+  color: rgb(100, 100, 100);
+}
+
+.light-gray {
+  color: gray;
+}
+
+.video-links-box {
+  max-height: 250px;
+  overflow-y: scroll;
+}
+
+.users-list {
+  max-height: 250px;
+  overflow-y: scroll;
 }

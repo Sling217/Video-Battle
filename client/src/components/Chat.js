@@ -61,9 +61,9 @@ const Chat = (props) => {
         setChatContent(event.currentTarget.value)
     }
 
-    const chatDisplay = props.chatHistory.map(chat => {
+    const chatDisplay = props.chatHistory.map((chat, index) => {
         return (
-        <div key={chat.id}>
+        <div key={index}>
             {chat.username}: {chat.content}{`\n`}
         </div>
         )

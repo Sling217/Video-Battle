@@ -1,13 +1,21 @@
 import React from "react";
 
 const UserList = (props) => {
-    const userList = props.userList.join('\n')
+    const userList = props.userList.map((user, index) => {
+        return(
+            <div key={index}>
+                {user}
+            </div>
+        )
+    })
     return (
         <div>
             <h6>
                 Online users:
             </h6>
-            <textarea rows="6" value={userList} />
+            <div className="users-list callout">
+                {userList}
+            </div>
         </div>
     )
 }
