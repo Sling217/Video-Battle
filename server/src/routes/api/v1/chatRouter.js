@@ -25,7 +25,7 @@ chatRouter.post("/", async (req, res) => {
                 client.send(JSON.stringify(messageObject))
             }
         })
-        res.status(201)
+        res.status(201).json(messageObject)
     }
     catch (err) {
         if (err instanceof ValidationError) {
