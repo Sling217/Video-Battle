@@ -2,10 +2,12 @@ import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import translateServerErrors from "../services/translateServerErrors";
 import ErrorList from "./layout/ErrorList";
+import { Redirect } from "react-router-dom";
 
 const Chat = (props) => {
     const [fetchErrors, setFetchErrors] = useState({})
     const [chatContent, setChatContent] = useState("")
+    const [shouldRedirect, setShouldRedirect] = useState(false)
 
     const postChat = async () => {
         try {
@@ -53,8 +55,12 @@ const Chat = (props) => {
 
     const handleSubmit = (event) => {
         event.preventDefault()
-        postChat()
-        setChatContent("")
+        if (props.user) {
+            postChat()
+            setChatContent("")
+        } else {
+            setShouldRedirect(true)
+        }
     }
 
     const handleInputChange = (event) => {
@@ -78,7 +84,12 @@ const Chat = (props) => {
         scrollToBottom()
     }, [props.chatHistory])
 
-    const hideClass = props.user ? "chat-submit" : "chat-submit hide"
+    if (shouldRedirect) {
+        return <Redirect to={{
+            pathname: "/user-sessions/new",
+            state: { message: "You need to sign in to chat" }
+        }}/>
+    }
 
     return(
         <div>
@@ -90,10 +101,9 @@ const Chat = (props) => {
                     ref={messagesEndRef}
                 />
             </div>
-            <form onSubmit={handleSubmit} className={hideClass}>
+            <form onSubmit={handleSubmit} className="chat-submit">
                 <label htmlFor="chatContent">
                     <input
-                        className={hideClass}
                         type="text"
                         name="chatContent"
                         onChange={handleInputChange}

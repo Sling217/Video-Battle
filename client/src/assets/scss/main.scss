@@ -105,3 +105,25 @@ body {
   max-height: 250px;
   overflow-y: scroll;
 }
+
+.text-link {
+  padding: 1rem;
+}
+
+.message {
+  transition: transform 0.3s ease-out;
+  transform: translateY(-100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #f8d7da;
+  color: #721c24;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message.show {
+  transform: translateY(0);
+}

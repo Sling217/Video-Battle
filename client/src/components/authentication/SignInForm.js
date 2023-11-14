@@ -1,11 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import config from "../../config";
 import FormError from "../layout/FormError";
+import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const SignInForm = () => {
   const [userPayload, setUserPayload] = useState({ email: "", password: "" });
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showMessage, setShowMessage] = useState(false);
+
+  const location = useLocation()
+  const message = location.state?.message
+  
+  useEffect(() => {
+    if(message) {
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 5000); // Hide the message after 5 seconds
+    }
+  }, [message]);
 
   const validateInput = (payload) => {
     setErrors({});
@@ -67,6 +80,9 @@ const SignInForm = () => {
 
   return (
     <div className="grid-container" onSubmit={onSubmit}>
+      <div>
+        {message && <p className={`message ${showMessage ? 'show' : ''}`}>{message}</p>}
+      </div>
       <h1>Sign In</h1>
       <form>
         <div>
@@ -90,6 +106,12 @@ const SignInForm = () => {
         </div>
         <div>
           <input type="submit" className="button" value="Sign In" />
+        </div>
+        <div className="text-center">
+          Don't have an account?
+          <Link to="/users/new" className="text-link">
+            Sign up!
+          </Link>
         </div>
       </form>
     </div>
