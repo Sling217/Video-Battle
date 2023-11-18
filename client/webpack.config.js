@@ -31,6 +31,9 @@ module.exports = {
       title: "Video Battle",
       template: path.join(__dirname, "public/index.template.html"),
     }),
+    new webpack.DefinePlugin({
+      'process.env.WEBSOCKET_URL': JSON.stringify(process.env.WEBSOCKET_URL)
+    }),
   ],
   module: {
     rules: [
