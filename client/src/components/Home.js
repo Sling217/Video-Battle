@@ -61,8 +61,7 @@ const Home = (props) => {
     }
 
     useEffect(() => {
-        const socket = new WebSocket('wss://video-battle-7eb93638f816.herokuapp.com')
-        // const socket = new WebSocket('ws://localhost:3000')
+        const socket = new WebSocket(process.env.WEBSOCKET_URL)
         socket.addEventListener('message', readNewMessage)
         setSocket(socket)
         return(() => {

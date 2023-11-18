@@ -24,6 +24,51 @@ cd Video-Battle
 yarn install
 ```
 
+Copy the included .env.example to .env and add the required environment variables.
+Set SESSION_SECRET to a random UUID.
+Set WEBSOCKET_URL to ws://localhost:3000 for development.
+
+## Deployment to Heroku
+
+Use the Heroku wizard to start your new project.
+
+Push the project code to your Heroku app with
+```bash
+heroku git:remote -a <your_heroku_app_name>
+git push heroku main
+```
+
+Create a database with
+```bash
+heroku addons:create heroku-postgresql
+```
+
+This may be necessary for the database to connect properly
+```bash
+heroku config:set PGSSLMODE=no-verify
+```
+
+Instead of a .env file, set the same variables through the Config Vars interface.  
+Set SESSION_SECRET to a random UUID.  
+Set WEBSOCKET_URL to wss://your-app-address  
+
+Run the database migrations with
+```bash
+heroku run bash
+cd server
+yarn run migrate:latest
+```
+
+Open the app with
+```bash
+heroku open
+```
+
+Monitor for problems with
+```bash
+heroku logs --tail
+```
+
 ## Usage
 
 To start the application:
