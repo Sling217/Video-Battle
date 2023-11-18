@@ -24,9 +24,9 @@ cd Video-Battle
 yarn install
 ```
 
-Copy the included .env.example to .env and add the required environment variables.
-Set SESSION_SECRET to a random UUID.
-Set WEBSOCKET_URL to ws://localhost:3000 for development.
+Copy the included .env.example to .env and add the required environment variables.  
+Set SESSION_SECRET to a random UUID.  
+Set WEBSOCKET_URL to ws://localhost:3000 for development.  
 
 ## Deployment to Heroku
 
