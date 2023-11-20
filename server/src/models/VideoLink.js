@@ -7,11 +7,12 @@ class VideoLink extends Model {
     static get jsonSchema() {
         return {
             type: "object",
-            required: ["fullUrl"],
+            required: ["fullUrl", "title"],
             properties: {
                 fullUrl: { type: "string", pattern: "https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\+.~#?&//=]*)" },
                 userId: { type: ["integer", "string"] },
-                anonymousSubmission: { type: "boolean" }
+                anonymousSubmission: { type: "boolean" },
+                title: { type: "string" }
             },
             allOf: [
                 {

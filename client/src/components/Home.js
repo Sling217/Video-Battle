@@ -8,16 +8,19 @@ import Chat from './Chat'
 const Home = (props) => {
     const [videoLinks, setVideoLinks] = useState([{
         fullUrl: "",
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        title: ""
     }])
     const [queueMode, setQueueMode] = useState(true)
     const [videoQueue, setVideoQueue] = useState([{
         fullUrl: "",
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        title: ""
     }])
     const [videoQueueFirstVideo, setVideoQueueFirstVideo] = useState({
         fullUrl: "",
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        title: ""
     })
     const [networkSeekTime, setNetworkSeekTime] = useState(0)
     const [socket, setSocket] = useState(null)

@@ -3,9 +3,9 @@ import { useEffect, useRef } from 'react'
 
 const VideoLinksBox = (props) => {
     const videoQueueDisplay = props.videoQueue.map((video, index) => {
-        let returnString = video.fullUrl
+        let returnString = video.title
         if (index === 0) {
-            returnString = <b>{video.fullUrl}</b>
+            returnString = <b>{video.title}</b>
         }
         return(
             <div key={index}>
@@ -14,15 +14,15 @@ const VideoLinksBox = (props) => {
         )
     })
     const videoLinksDisplay = props.videoLinks.map((videoLink, index, videoLinksDisplay) => {
-        let returnString = videoLink.fullUrl
+        let returnString = videoLink.title
         if (index === videoLinksDisplay.length-1) {
-            returnString = <b>{videoLink.fullUrl}</b>
+            returnString = <b>{videoLink.title}</b>
         } else if (index === videoLinksDisplay.length-2) {
-            returnString = <div>{videoLink.fullUrl}</div>
+            returnString = <div>{videoLink.title}</div>
         } else if (index === videoLinksDisplay.length-3) {
-            returnString = <div className="dark-gray">{videoLink.fullUrl}</div>
+            returnString = <div className="dark-gray">{videoLink.title}</div>
         } else {
-            returnString = <div className="light-gray">{videoLink.fullUrl}</div>
+            returnString = <div className="light-gray">{videoLink.title}</div>
         }
         return (
             <div key={index}>

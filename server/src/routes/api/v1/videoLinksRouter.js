@@ -3,7 +3,7 @@ import { VideoLink, MainChannelQueue } from "../../../models/index.js"
 import { ValidationError } from "objection"
 import cleanUserInput from "../../../services/cleanUserInput.js"
 import serializeVideoQueue from "../../../services/serializeVideoQueue.js"
-import getDuration from "../../../services/getVideoDuration.js"
+import getVideoInfo from "../../../services/getVideoInfo.js"
 import app from "../../../app.js"
 import WebSocket from 'ws'
 
@@ -27,8 +27,13 @@ videoLinksRouter.post("/", async (req, res) => {
     try {
         const { body } = req
         const cleanedInput = cleanUserInput(body)
+        const videoInfo = await getVideoInfo(cleanedInput.videoLink)
+        if (videoInfo instanceof Error) {
+            return res.status(500)
+        }
         const newVideoLinkObject = {
             fullUrl: cleanedInput.videoLink,
+            title: videoInfo.title
         }
         if (req.user) {
             newVideoLinkObject.userId = req.user.id
@@ -42,7 +47,8 @@ videoLinksRouter.post("/", async (req, res) => {
                 type: "videoLink",
                 content: {
                     fullUrl: videoLink.fullUrl,
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    title: videoInfo.title
                 }
             }
             wss.clients.forEach(client => {
@@ -51,15 +57,11 @@ videoLinksRouter.post("/", async (req, res) => {
                 }
             })
         } else {
-            const videoDuration = await getDuration(cleanedInput.videoLink)
-            if (videoDuration === NaN) {
-                newVideoLinkObject.duration = 100 * 60 * 60
-            } else if (videoDuration instanceof Error) {
-                return res.status(500)
+            if (videoInfo.duration === undefined) {
+                newVideoLinkObject.duration = 100 * 60 * 60 // TODO fix for live videos
             } else {
-                newVideoLinkObject.duration = videoDuration
+                newVideoLinkObject.duration = videoInfo.duration
             }
-            
             await MainChannelQueue.query().insert(newVideoLinkObject)
             const videoObjectArray =  await MainChannelQueue.query().orderBy("updatedAt")
             const videoQueue = serializeVideoQueue(videoObjectArray)
