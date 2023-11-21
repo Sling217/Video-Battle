@@ -7,10 +7,11 @@ class VideoInfo extends Model {
     static get jsonSchema() {
         return {
             type: "object",
-            required: ["fullUrl"],
+            required: ["fullUrl", "title"],
             properties: {
                 fullUrl: { type: "string", pattern: "https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_\+.~#?&//=]*)" },
-                duration: { type: "integer" }
+                duration: { type: "integer" },
+                title: { type: "string" }
             }
         }
     }
