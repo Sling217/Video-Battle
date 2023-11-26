@@ -264,4 +264,5 @@ const port = configuration.web.port
 server.listen(configuration.web.port, configuration.web.host, () => {
   console.log(`Server is listening on port ${port}`);
 });
+
 export default { app, wss, videoLinkProcessed };
