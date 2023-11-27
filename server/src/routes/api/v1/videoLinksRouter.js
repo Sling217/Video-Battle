@@ -41,7 +41,6 @@ videoLinksRouter.post("/", async (req, res) => {
             newVideoLinkObject.anonymousSubmission = true
         }
         const wss = app.wss
-        console.log("cleanedInput: ", cleanedInput)
         if (cleanedInput.changeToQueueMode === false) {
             await VideoLink.query().insertAndFetch(newVideoLinkObject)
             const messageObject = {
