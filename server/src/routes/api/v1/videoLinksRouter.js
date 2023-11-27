@@ -3,6 +3,7 @@ import { VideoLink, MainChannelQueue } from "../../../models/index.js"
 import { ValidationError } from "objection"
 import cleanUserInput from "../../../services/cleanUserInput.js"
 import serializeVideoQueue from "../../../services/serializeVideoQueue.js"
+import serializeVideoLinkHistory from "../../../services/serializeVideoLinkHistory.js"
 import getVideoInfo from "../../../services/getVideoInfo.js"
 import app from "../../../app.js"
 import WebSocket from 'ws'
@@ -14,7 +15,7 @@ videoLinksRouter.get("/", async (req, res) => {
         const videoLinkHistory = (await VideoLink.query().orderBy("updatedAt", 'desc').limit(5)).reverse()
         const videoQueue = await MainChannelQueue.query().orderBy("updatedAt")
         const responseObject = {
-            videoLinkHistory: videoLinkHistory,
+            videoLinkHistory: serializeVideoLinkHistory(videoLinkHistory),
             videoQueue: serializeVideoQueue(videoQueue)
         }
         res.status(200).json(responseObject)
