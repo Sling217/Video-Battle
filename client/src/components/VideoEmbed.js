@@ -26,11 +26,7 @@ const VideoEmbed = (props) => {
             if (!response.ok) {
                 throw new Error(`${response.status} (${response.statusText})`)
             }
-            const videoObject = {
-                fullUrl: responseBody.videoLink.fullUrl,
-                updatedAt: new Date(responseBody.videoLink.updatedAt)
-            }
-            props.setVideoLinks([videoObject])
+            props.setVideoLinks(responseBody.videoLinkHistory)
             if (responseBody.videoQueue.length > 0) {
                 props.setVideoQueue(responseBody.videoQueue)
             }
