@@ -11,10 +11,10 @@ const videoLinksRouter = new express.Router()
 
 videoLinksRouter.get("/", async (req, res) => {
     try {
-        const videoFullUrl = await VideoLink.query().orderBy("updatedAt", 'desc').limit(1).first()
+        const videoLinkHistory = (await VideoLink.query().orderBy("updatedAt", 'desc').limit(5)).reverse()
         const videoQueue = await MainChannelQueue.query().orderBy("updatedAt")
         const responseObject = {
-            videoLink: videoFullUrl,
+            videoLinkHistory: videoLinkHistory,
             videoQueue: serializeVideoQueue(videoQueue)
         }
         res.status(200).json(responseObject)
@@ -40,13 +40,14 @@ videoLinksRouter.post("/", async (req, res) => {
         } else {
             newVideoLinkObject.anonymousSubmission = true
         }
-        const videoLink = await VideoLink.query().insertAndFetch(newVideoLinkObject)
         const wss = app.wss
+        console.log("cleanedInput: ", cleanedInput)
         if (cleanedInput.changeToQueueMode === false) {
+            await VideoLink.query().insertAndFetch(newVideoLinkObject)
             const messageObject = {
                 type: "videoLink",
                 content: {
-                    fullUrl: videoLink.fullUrl,
+                    fullUrl: newVideoLinkObject.fullUrl,
                     updatedAt: new Date(),
                     title: videoInfo.title
                 }
@@ -81,7 +82,7 @@ videoLinksRouter.post("/", async (req, res) => {
         }
         app.videoLinkProcessed.emit('videoLinkPostData', emitterObject)
         
-        res.set({"Content-Type": "application/json"}).status(201).json({ videoLink: videoLink })
+        res.set({"Content-Type": "application/json"}).status(201).json({ message: "submission successful" })
     } catch(err) {
         if (err instanceof ValidationError) {
             res.status(422).json({ errors: err.data })
