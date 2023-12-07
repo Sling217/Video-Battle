@@ -21,6 +21,7 @@ const SignInForm = () => {
   }, [message]);
 
   const validateInput = (payload) => {
+    let valid = true
     setErrors({});
     const { email, password } = payload;
     const emailRegexp = config.validation.email.regexp;
@@ -30,6 +31,7 @@ const SignInForm = () => {
         ...newErrors,
         email: "is invalid",
       };
+      valid = false
     }
 
     if (password.trim() === "") {
@@ -37,16 +39,16 @@ const SignInForm = () => {
         ...newErrors,
         password: "is required",
       };
+      valid = false
     }
-
     setErrors(newErrors);
+    return valid
   };
 
   const onSubmit = async (event) => {
     event.preventDefault()
-    validateInput(userPayload)
     try {
-      if (Object.keys(errors).length === 0) {
+      if (validateInput(userPayload)) {
         const response = await fetch("/api/v1/user-sessions", {
           method: "post",
           body: JSON.stringify(userPayload),
