@@ -13,7 +13,7 @@ const RegistrationForm = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [fetchErrors, setFetchErrors] = useState([])
+  const [fetchErrors, setFetchErrors] = useState({})
 
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
@@ -69,7 +69,7 @@ const RegistrationForm = () => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    setFetchErrors([])
+    setFetchErrors({})
     try {
       if (validateInput(userPayload)) {
         const response = await fetch("/api/v1/users", {
@@ -124,6 +124,7 @@ const RegistrationForm = () => {
             />
             <FormError error={errors.email} />
           </label>
+          <ErrorList errors={fetchErrors}/>
         </div>
         <div>
           <label>
@@ -165,7 +166,6 @@ const RegistrationForm = () => {
           <input type="submit" className="button" value="Register" />
         </div>
       </form>
-      <ErrorList errors={fetchErrors}/>
     </div>
   );
 };
