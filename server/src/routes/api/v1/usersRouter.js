@@ -13,7 +13,7 @@ usersRouter.post("/", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res.status(422).json({ errors: error });
+    return res.status(422).json({ errors: error.data });
   }
 });
 

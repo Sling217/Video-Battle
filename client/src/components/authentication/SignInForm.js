@@ -3,13 +3,17 @@ import config from "../../config";
 import FormError from "../layout/FormError";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import ErrorList from "../layout/ErrorList";
 
 const SignInForm = () => {
   const [userPayload, setUserPayload] = useState({ email: "", password: "" });
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [errors, setErrors] = useState({});
   const [showMessage, setShowMessage] = useState(false);
+  const [fetchErrors, setFetchErrors] = useState({})
 
+  const history = useHistory()
   const location = useLocation()
   const message = location.state?.message
   
@@ -21,6 +25,7 @@ const SignInForm = () => {
   }, [message]);
 
   const validateInput = (payload) => {
+    let valid = true
     setErrors({});
     const { email, password } = payload;
     const emailRegexp = config.validation.email.regexp;
@@ -30,6 +35,7 @@ const SignInForm = () => {
         ...newErrors,
         email: "is invalid",
       };
+      valid = false
     }
 
     if (password.trim() === "") {
@@ -37,16 +43,17 @@ const SignInForm = () => {
         ...newErrors,
         password: "is required",
       };
+      valid = false
     }
-
     setErrors(newErrors);
+    return valid
   };
 
   const onSubmit = async (event) => {
     event.preventDefault()
-    validateInput(userPayload)
+    setFetchErrors({})
     try {
-      if (Object.keys(errors).length === 0) {
+      if (validateInput(userPayload)) {
         const response = await fetch("/api/v1/user-sessions", {
           method: "post",
           body: JSON.stringify(userPayload),
@@ -55,11 +62,15 @@ const SignInForm = () => {
           })
         })
         if(!response.ok) {
-          const errorMessage = `${response.status} (${response.statusText})`
-          const error = new Error(errorMessage)
-          throw(error)
+          if (response.status === 401) {
+            const newFetchError = {"Login": "information invalid."}
+            return setFetchErrors(newFetchError)
+          } else {
+            const errorMessage = `${response.status} (${response.statusText})`
+            const error = new Error(errorMessage)
+            throw(error)
+          }
         }
-        const userData = await response.json()
         setShouldRedirect(true)
       }
     } catch(err) {
@@ -74,9 +85,11 @@ const SignInForm = () => {
     });
   };
 
-  if (shouldRedirect) {
-    location.href = "/";
-  }
+  useEffect(() => {
+    if (shouldRedirect) {
+      history.push("/")
+    }
+  },[shouldRedirect])
 
   return (
     <div className="grid-container" onSubmit={onSubmit}>
@@ -107,6 +120,7 @@ const SignInForm = () => {
         <div>
           <input type="submit" className="button" value="Sign In" />
         </div>
+        <ErrorList errors={fetchErrors} />
         <div className="text-center">
           Don't have an account?
           <Link to="/users/new" className="text-link">

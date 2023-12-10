@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import FormError from "../layout/FormError";
 import config from "../../config";
+import translateServerErrors from "../../services/translateServerErrors";
+import ErrorList from "../layout/ErrorList";
 
 const RegistrationForm = () => {
   const [userPayload, setUserPayload] = useState({
@@ -11,10 +13,12 @@ const RegistrationForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [fetchErrors, setFetchErrors] = useState({})
 
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const validateInput = (payload) => {
+    let valid = true
     setErrors({});
     const { email, password, passwordConfirmation, username } = payload;
     const emailRegexp = config.validation.email.regexp;
@@ -24,6 +28,7 @@ const RegistrationForm = () => {
         ...newErrors,
         email: "is invalid",
       };
+      valid = false
     }
 
     if (username.trim() === "") {
@@ -31,6 +36,7 @@ const RegistrationForm = () => {
         ...newErrors,
         username: "is required",
       };
+      valid = false
     }
 
     if (password.trim() === "") {
@@ -38,6 +44,7 @@ const RegistrationForm = () => {
         ...newErrors,
         password: "is required",
       };
+      valid = false
     }
 
     if (passwordConfirmation.trim() === "") {
@@ -45,23 +52,26 @@ const RegistrationForm = () => {
         ...newErrors,
         passwordConfirmation: "is required",
       };
+      valid = false
     } else {
       if (passwordConfirmation !== password) {
         newErrors = {
           ...newErrors,
           passwordConfirmation: "does not match password",
         };
+        valid = false
       }
     }
 
     setErrors(newErrors);
+    return valid
   };
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    validateInput(userPayload);
+    setFetchErrors({})
     try {
-      if (Object.keys(errors).length === 0) {
+      if (validateInput(userPayload)) {
         const response = await fetch("/api/v1/users", {
           method: "post",
           body: JSON.stringify(userPayload),
@@ -70,9 +80,15 @@ const RegistrationForm = () => {
           }),
         });
         if (!response.ok) {
-          const errorMessage = `${response.status} (${response.statusText})`;
-          const error = new Error(errorMessage);
-          throw error;
+          if (response.status === 422) {
+            const errorBody = await response.json()
+            const newFetchErrors = translateServerErrors(errorBody.errors)
+            return setFetchErrors(newFetchErrors)
+          } else {
+            const errorMessage = `${response.status} (${response.statusText})`;
+            const error = new Error(errorMessage);
+            throw error;
+          }
         }
         const userData = await response.json();
         setShouldRedirect(true);
@@ -108,6 +124,7 @@ const RegistrationForm = () => {
             />
             <FormError error={errors.email} />
           </label>
+          <ErrorList errors={fetchErrors}/>
         </div>
         <div>
           <label>
