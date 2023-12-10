@@ -11,6 +11,18 @@ let translateServerErrors = (errors) => {
           ...serializedErrors,
           ["Video link"]: "is not a valid URL. Must include http/https."
         }
+      } else if (key === "email") {
+        if (error.keyword === "pattern") {
+          serializedErrors = {
+            ...serializedErrors,
+            ["Email"]: "is invalid."
+          }
+        } else if (error.keyword === "unique") {
+          serializedErrors = {
+            ...serializedErrors,
+            ["Email"]: "is is already in use."
+          }
+        }
       } else {
         serializedErrors = {
           ...serializedErrors,

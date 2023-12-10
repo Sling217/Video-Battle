@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import FormError from "../layout/FormError";
 import config from "../../config";
+import translateServerErrors from "../../services/translateServerErrors";
+import ErrorList from "../layout/ErrorList";
 
 const RegistrationForm = () => {
   const [userPayload, setUserPayload] = useState({
@@ -11,6 +13,7 @@ const RegistrationForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [fetchErrors, setFetchErrors] = useState([])
 
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
@@ -66,6 +69,7 @@ const RegistrationForm = () => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
+    setFetchErrors([])
     try {
       if (validateInput(userPayload)) {
         const response = await fetch("/api/v1/users", {
@@ -76,9 +80,15 @@ const RegistrationForm = () => {
           }),
         });
         if (!response.ok) {
-          const errorMessage = `${response.status} (${response.statusText})`;
-          const error = new Error(errorMessage);
-          throw error;
+          if (response.status === 422) {
+            const errorBody = await response.json()
+            const newFetchErrors = translateServerErrors(errorBody.errors)
+            return setFetchErrors(newFetchErrors)
+          } else {
+            const errorMessage = `${response.status} (${response.statusText})`;
+            const error = new Error(errorMessage);
+            throw error;
+          }
         }
         const userData = await response.json();
         setShouldRedirect(true);
@@ -155,6 +165,7 @@ const RegistrationForm = () => {
           <input type="submit" className="button" value="Register" />
         </div>
       </form>
+      <ErrorList errors={fetchErrors}/>
     </div>
   );
 };
