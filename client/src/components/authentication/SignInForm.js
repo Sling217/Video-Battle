@@ -3,7 +3,6 @@ import config from "../../config";
 import FormError from "../layout/FormError";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useHistory } from "react-router-dom";
 import ErrorList from "../layout/ErrorList";
 
 const SignInForm = () => {
@@ -13,9 +12,8 @@ const SignInForm = () => {
   const [showMessage, setShowMessage] = useState(false);
   const [fetchErrors, setFetchErrors] = useState({})
 
-  const history = useHistory()
-  const location = useLocation()
-  const message = location.state?.message
+  const reactLocation = useLocation()
+  const message = reactLocation.state?.message
   
   useEffect(() => {
     if(message) {
@@ -85,11 +83,9 @@ const SignInForm = () => {
     });
   };
 
-  useEffect(() => {
-    if (shouldRedirect) {
-      history.push("/")
-    }
-  },[shouldRedirect])
+  if (shouldRedirect) {
+    location.href = "/"
+  }
 
   return (
     <div className="grid-container" onSubmit={onSubmit}>
