@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { connection } from "../boot.js"
-import VideoLinkSeeder from "./seeders/videoLinkSeeder.js"
+import VideoLinkSeeder from "./seeders/VideoLinkSeeder.js"
+import UsersSeeders from "./seeders/UsersSeeders.js"
 
 class Seeder {
   static async seed() {
@@ -8,6 +9,9 @@ class Seeder {
 
     console.log("Seeding VideoLinks...")
     await VideoLinkSeeder.seed()
+
+    console.log ("Seeding Users...")
+    await UsersSeeders.seed()
     
     console.log("Done!")
     await connection.destroy()
