@@ -20,6 +20,12 @@ const TopBar = ({ user }) => {
     </li>,
   ];
 
+  const adminListItems = [
+    <li key="admin">
+      <Link to="/admin">Admin</Link>
+    </li>,
+  ];
+
   return (
     <div className="top-bar">
       <div className="top-bar-left">
@@ -28,6 +34,7 @@ const TopBar = ({ user }) => {
           <li>
             <Link to="/">Home</Link>
           </li>
+          {user && user.role === "admin" ? adminListItems : null}
         </ul>
       </div>
       <div className="top-bar-right">
