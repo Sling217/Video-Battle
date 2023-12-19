@@ -8,6 +8,7 @@ import RegistrationForm from "./registration/RegistrationForm";
 import SignInForm from "./authentication/SignInForm";
 import TopBar from "./layout/TopBar";
 import Home from "./Home";
+import Administration from "./Administration";
 
 const App = (props) => {
   const [currentUser, setCurrentUser] = useState(undefined);
@@ -31,6 +32,7 @@ const App = (props) => {
         <Route exact path="/" render={(props) => <Home {...props} user={currentUser} />} />
         <Route exact path="/users/new" component={RegistrationForm} />
         <Route exact path="/user-sessions/new" component={SignInForm} />
+        <Route exact path="/admin" component={Administration} />
       </Switch>
     </Router>
   );
