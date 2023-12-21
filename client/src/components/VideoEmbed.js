@@ -162,6 +162,7 @@ const VideoEmbed = (props) => {
         setSeeking(false)
         setPlayed(parseFloat(event.target.value))
         const duration = playerRef.current.getDuration()
+        console.log("The duration is:", duration)
         if (duration) {
             const seekTimeSeconds = parseFloat(event.target.value)*duration
             const messageObject = {

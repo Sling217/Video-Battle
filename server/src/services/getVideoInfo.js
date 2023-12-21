@@ -14,6 +14,7 @@ const getVideoInfo = async(fullUrl) => {
                 duration: videoInfoJson.duration,
                 title: videoInfoJson.title
             }
+            console.log("The video Info Object:", videoInfoJson)
             await VideoInfo.query().insert(newVideoInfo)
             return newVideoInfo
         } catch (err) {
