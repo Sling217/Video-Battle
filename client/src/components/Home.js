@@ -37,6 +37,7 @@ const Home = (props) => {
             setNetworkSeekTime(0)
         } else if (receivedData.type === "seekTime") {
             setNetworkSeekTime(receivedData.content)
+            // setNetworkSeekTime(25482755)
         } else if (receivedData.type === "playing") {
             setPlaying(receivedData.content)
         } else if (receivedData.type === "muted") {
