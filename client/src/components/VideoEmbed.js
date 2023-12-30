@@ -106,7 +106,9 @@ const VideoEmbed = (props) => {
 
     useEffect(() => {
         if(playerRef.current) {
-            playerRef.current.seekTo(props.networkSeekTime, "seconds")
+            // playerRef.current.seekTo(props.networkSeekTime, "seconds")
+            // console.log("video's current time: ", playerRef.current.getCurrentTime())
+            // playerRef.current.seekTo(0.9992, "fraction")
         }
     }, [props.networkSeekTime])
     
@@ -162,7 +164,10 @@ const VideoEmbed = (props) => {
         setSeeking(false)
         setPlayed(parseFloat(event.target.value))
         const duration = playerRef.current.getDuration()
+        const currentTime = playerRef.current.getCurrentTime()
         console.log("The duration is:", duration)
+        console.log("The current  is:", currentTime)
+        console.log("The difference: ", currentTime - duration)
         if (duration) {
             const seekTimeSeconds = parseFloat(event.target.value)*duration
             const messageObject = {

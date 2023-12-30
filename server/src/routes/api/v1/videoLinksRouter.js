@@ -7,6 +7,7 @@ import serializeVideoLinkHistory from "../../../services/serializeVideoLinkHisto
 import getVideoInfo from "../../../services/getVideoInfo.js"
 import app from "../../../app.js"
 import WebSocket from 'ws'
+import debugYtdl from "../../../services/debugYtdl.js"
 
 const videoLinksRouter = new express.Router()
 
@@ -14,9 +15,11 @@ videoLinksRouter.get("/", async (req, res) => {
     try {
         const videoLinkHistory = (await VideoLink.query().orderBy("updatedAt", 'desc').limit(5)).reverse()
         const videoQueue = await MainChannelQueue.query().orderBy("updatedAt")
+        const debugObject = await debugYtdl()
         const responseObject = {
             videoLinkHistory: serializeVideoLinkHistory(videoLinkHistory),
-            videoQueue: serializeVideoQueue(videoQueue)
+            videoQueue: serializeVideoQueue(videoQueue),
+            debugObject: debugObject
         }
         res.status(200).json(responseObject)
     } catch(err) {
@@ -58,8 +61,9 @@ videoLinksRouter.post("/", async (req, res) => {
                 }
             })
         } else {
-            if (videoInfo.duration === undefined) {
-                newVideoLinkObject.duration = 100 * 60 * 60 // TODO fix for live videos
+            // if (videoInfo.duration === undefined) {
+            if (!typeof videoInfo.duration === "number") {
+                newVideoLinkObject.duration = 12 * 60 * 60 // TODO fix for live videos
             } else {
                 newVideoLinkObject.duration = videoInfo.duration
             }
